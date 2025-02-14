@@ -1,5 +1,6 @@
 import pygame
 import math
+from animator import Animate
 
 class Player:
     
@@ -9,9 +10,28 @@ class Player:
         self.y = y
         self.width = width
         self.height = height
+        self.animations = [
+            './assets/player/walk_down.png',
+            './assets/player/walk_left.png',
+            './assets/player/walk_right.png'
+        ]
+        self.player = Animate(self.animations[0], self.x, self.y, self.width, self.height)
     
-    def render(self, screen):
-        pygame.draw.rect(screen, "blue", (self.x, self.y, self.width, self.height))
+    def render(self, screen, keys):
+        direction = "d"
+
+        if keys[pygame.K_a]:
+            direction = "l"
+        elif keys[pygame.K_d]:
+            direction = "r"
+        elif keys[pygame.K_s]:
+            direction = "d"
+
+        # Map directions
+        animation_map = {"l": 1, "r": 2, "d": 0}
+
+        self.player = Animate(self.animations[animation_map[direction]], self.x, self.y, self.width, self.height)
+        self.player.animate(screen, 2)
 
 class PlayerBullet:
 

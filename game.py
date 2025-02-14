@@ -8,6 +8,7 @@ SCREEN_HEIGHT = 720
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Cursed Carrots')
 clock = pygame.time.Clock()
 
 class Engine:
@@ -55,7 +56,7 @@ class Engine:
             pygame.draw.rect(screen, "red", (300 - self.display_scroll[0], 400 - self.display_scroll[1], 16, 16))
             pygame.draw.rect(screen, "red", (600 - self.display_scroll[0], 600 - self.display_scroll[1], 16, 16))
 
-            self.player.render(screen)
+            self.player.render(screen, keys)
 
             for bullet in self.player_bullets:
                 bullet.render(screen)
