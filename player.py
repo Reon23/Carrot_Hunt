@@ -15,28 +15,35 @@ class Player:
             "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 2),
             "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 2),
         }
-        self.current_animation = self.animations["d"]
+        self.direction = "d"
+        self.current_animation = self.animations[self.direction]
+        self.play_animation = False
     
     def render(self, screen, keys):
-        direction = "d"
 
+        # Handle player movement
         if keys[pygame.K_a]:
-            direction = "l"
-        elif keys[pygame.K_d]:
-            direction = "r"
-        elif keys[pygame.K_s]:
-            direction = "d"
+            self.direction = "l"
+            self.play_animation = True
+        if keys[pygame.K_d]:
+            self.direction = "r"
+            self.play_animation = True
+        if keys[pygame.K_s] or keys[pygame.K_w]:
+            self.direction = "d"
+            self.play_animation = True
+        if not keys[pygame.K_a] and not keys[pygame.K_d] and not keys[pygame.K_s] and not keys[pygame.K_w]:
+            self.play_animation = False
 
         # Only change animation if direction changes
-        if self.current_animation != self.animations[direction]:
-            self.current_animation = self.animations[direction]
+        if self.current_animation != self.animations[self.direction]:
+            self.current_animation = self.animations[self.direction]
 
         # Update position for animation object
         self.current_animation.x = self.x
         self.current_animation.y = self.y
 
         # Animate current frame
-        self.current_animation.animate(screen)
+        self.current_animation.animate(screen, self.play_animation)
 
 class PlayerBullet:
 

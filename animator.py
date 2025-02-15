@@ -29,14 +29,17 @@ class Animate:
         frame = pygame.transform.scale(frame, (self.width * scale, self.height * scale))
         return frame
 
-    def animate(self, screen):
+    def animate(self, screen, play):
         current_time = pygame.time.get_ticks() 
 
-        if current_time - self.last_update >= self.animation_cooldown:
-            self.last_update = current_time
-            self.frame += 1
+        if play:
+            if current_time - self.last_update >= self.animation_cooldown:
+                self.last_update = current_time
+                self.frame += 1
 
-            if self.frame >= self.frames:
-                self.frame = 0
-        
-        screen.blit(self.animation_list[self.frame], (self.x, self.y))
+                if self.frame >= self.frames:
+                    self.frame = 0
+            
+            screen.blit(self.animation_list[self.frame], (self.x, self.y))
+        else:
+            screen.blit(self.animation_list[0], (self.x, self.y))
