@@ -19,6 +19,7 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_bullets = []
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32)
+        self.player_speed = 8
 
     def run(self):
         while self.running:
@@ -35,21 +36,21 @@ class Engine:
             # Handle keyboard events
             keys = pygame.key.get_pressed()
             if keys[pygame.K_a]:
-                self.display_scroll[0] -= 5
+                self.display_scroll[0] -= self.player_speed
                 for bullet in self.player_bullets:
-                    bullet.x += 5
+                    bullet.x += self.player_speed
             if keys[pygame.K_d]:
-                self.display_scroll[0] += 5
+                self.display_scroll[0] += self.player_speed
                 for bullet in self.player_bullets:
-                    bullet.x -= 5
+                    bullet.x -= self.player_speed
             if keys[pygame.K_w]:
-                self.display_scroll[1] -= 5
+                self.display_scroll[1] -= self.player_speed
                 for bullet in self.player_bullets:
-                    bullet.y += 5
+                    bullet.y += self.player_speed
             if keys[pygame.K_s]:
-                self.display_scroll[1] += 5
+                self.display_scroll[1] += self.player_speed
                 for bullet in self.player_bullets:
-                    bullet.y -= 5
+                    bullet.y -= self.player_speed
 
             # Render screen
             screen.fill("green")

@@ -10,12 +10,12 @@ class Player:
         self.y = y
         self.width = width
         self.height = height
-        self.animations = [
-            './assets/player/walk_down.png',
-            './assets/player/walk_left.png',
-            './assets/player/walk_right.png'
-        ]
-        self.player = Animate(self.animations[0], self.x, self.y, self.width, self.height)
+        self.animations = {
+            "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 2),
+            "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 2),
+            "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 2),
+        }
+        self.current_animation = self.animations["d"]
     
     def render(self, screen, keys):
         direction = "d"
@@ -27,11 +27,16 @@ class Player:
         elif keys[pygame.K_s]:
             direction = "d"
 
-        # Map directions
-        animation_map = {"l": 1, "r": 2, "d": 0}
+        # Only change animation if direction changes
+        if self.current_animation != self.animations[direction]:
+            self.current_animation = self.animations[direction]
 
-        self.player = Animate(self.animations[animation_map[direction]], self.x, self.y, self.width, self.height)
-        self.player.animate(screen, 2)
+        # Update position for animation object
+        self.current_animation.x = self.x
+        self.current_animation.y = self.y
+
+        # Animate current frame
+        self.current_animation.animate(screen)
 
 class PlayerBullet:
 
