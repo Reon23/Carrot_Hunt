@@ -11,15 +11,16 @@ class Player:
         self.width = width
         self.height = height
         self.animations = {
-            "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 2),
-            "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 2),
-            "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 2),
+            "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2),
+            "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2),
+            "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 0, 2),
         }
         self.direction = "d"
         self.current_animation = self.animations[self.direction]
         self.play_animation = False
     
     def render(self, screen, keys):
+        self.direction = "d"
 
         # Handle player movement
         if keys[pygame.K_a]:
@@ -43,7 +44,7 @@ class Player:
         self.current_animation.y = self.y
 
         # Animate current frame
-        self.current_animation.animate(screen, self.play_animation)
+        self.current_animation.animate(screen, self.play_animation, self.x, self.y)
 
 class PlayerBullet:
 

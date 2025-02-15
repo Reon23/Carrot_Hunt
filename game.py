@@ -1,5 +1,7 @@
 import pygame
+import random
 from player import Player, PlayerBullet
+from enemy import Morph1
 
 # Constants
 SCREEN_WIDTH = 1280
@@ -19,7 +21,13 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_bullets = []
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32)
+        self.enemy_list = []
         self.player_speed = 8
+        self.spawnEnemy()
+        self.spawnEnemy()
+
+    def spawnEnemy(self):
+        self.enemy_list.append(Morph1(random.randint(64, SCREEN_WIDTH//2), random.randint(128, SCREEN_WIDTH//2), 128, 64, 3)) 
 
     def run(self):
         while self.running:
@@ -37,26 +45,34 @@ class Engine:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_a]:
                 self.display_scroll[0] -= self.player_speed
+                
                 for bullet in self.player_bullets:
                     bullet.x += self.player_speed
             if keys[pygame.K_d]:
                 self.display_scroll[0] += self.player_speed
+                
                 for bullet in self.player_bullets:
                     bullet.x -= self.player_speed
             if keys[pygame.K_w]:
                 self.display_scroll[1] -= self.player_speed
+                
                 for bullet in self.player_bullets:
                     bullet.y += self.player_speed
             if keys[pygame.K_s]:
                 self.display_scroll[1] += self.player_speed
+                
                 for bullet in self.player_bullets:
                     bullet.y -= self.player_speed
+            
 
             # Render screen
             screen.fill("green")
-            pygame.draw.rect(screen, "red", (300 - self.display_scroll[0], 400 - self.display_scroll[1], 16, 16))
-            pygame.draw.rect(screen, "red", (600 - self.display_scroll[0], 600 - self.display_scroll[1], 16, 16))
 
+            for enemy in self.enemy_list:
+                enemy.updatePosition(self.display_scroll)
+                enemy.moveToPlayer(self.player.x - 64, self.player.y - 64, self.display_scroll)
+                enemy.render(screen)
+            
             self.player.render(screen, keys)
 
             for bullet in self.player_bullets:
