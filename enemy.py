@@ -67,4 +67,4 @@ class Morph1:
             self.mode = "idle"  # Enemy stops moving
     
     def render(self, screen):
-        self.animations[self.mode].animate(screen, True, self.render_x, self.render_y)
+        self.animations[self.mode].animate(screen, True, self.render_x, self.render_y, 0, False)

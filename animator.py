@@ -17,6 +17,7 @@ class Animate:
         self.animation_list = []
         self.last_update = pygame.time.get_ticks()
         self.animation_cooldown = 50
+        self.last_angle = 0
         for i in range(self.frames):
             self.animation_list.append(self.getFrame(self.sprite_sheet, i, frame_row, self.width, self.height, self.scale))
 
@@ -29,17 +30,19 @@ class Animate:
         frame = pygame.transform.scale(frame, (self.width * scale, self.height * scale))
         return frame
 
-    def animate(self, screen, play, render_x, render_y):
-        current_time = pygame.time.get_ticks() 
+    def animate(self, screen, play, render_x, render_y, angle, flipped):
+        current_time = pygame.time.get_ticks()
 
         if play:
             if current_time - self.last_update >= self.animation_cooldown:
                 self.last_update = current_time
-                self.frame += 1
+                self.frame = (self.frame + 1) % self.frames  # Loop animation frames
 
-                if self.frame >= self.frames:
-                    self.frame = 0
-            
-            screen.blit(self.animation_list[self.frame], (render_x, render_y))
-        else:
-            screen.blit(self.animation_list[0], (render_x, render_y))
+        rotated_image = pygame.transform.rotate(self.animation_list[self.frame], angle)
+
+        # Flip the image if needed
+        if flipped:
+            rotated_image = pygame.transform.flip(rotated_image, True, False)
+        new_rect = rotated_image.get_rect(center=(render_x, render_y))  # Keep correct positioning
+
+        screen.blit(rotated_image, new_rect.topleft)

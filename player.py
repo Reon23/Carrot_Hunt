@@ -1,6 +1,7 @@
 import pygame
 import math
 from animator import Animate
+from weapons import ak47
 
 class Player:
     
@@ -18,6 +19,8 @@ class Player:
         self.direction = "d"
         self.current_animation = self.animations[self.direction]
         self.play_animation = False
+
+        self.player_weapon = ak47(self.x, self.y, 0.8)
     
     def render(self, screen, keys):
         self.direction = "d"
@@ -44,7 +47,8 @@ class Player:
         self.current_animation.y = self.y
 
         # Animate current frame
-        self.current_animation.animate(screen, self.play_animation, self.x, self.y)
+        self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
+        self.player_weapon.render(screen, self.x, self.y)
 
 class PlayerBullet:
 

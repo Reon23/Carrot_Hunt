@@ -27,7 +27,7 @@ class Engine:
         self.spawnEnemy()
 
     def spawnEnemy(self):
-        self.enemy_list.append(Morph1(random.randint(64, SCREEN_WIDTH//2), random.randint(128, SCREEN_WIDTH//2), 128, 64, 3)) 
+        self.enemy_list.append(Morph1(random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 128, 64, 3)) 
 
     def run(self):
         while self.running:
