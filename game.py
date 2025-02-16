@@ -1,6 +1,6 @@
 import pygame
 import random
-from player import Player, PlayerBullet
+from player import Player
 from enemy import Morph1
 
 # Constants
@@ -19,10 +19,9 @@ class Engine:
     def __init__(self):
         self.running = True
         self.display_scroll = [0, 0]
-        self.player_bullets = []
-        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32)
         self.enemy_list = []
         self.player_speed = 8
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.spawnEnemy()
         self.spawnEnemy()
 
@@ -36,33 +35,17 @@ class Engine:
                 if event.type == pygame.QUIT:
                     self.running = False  # Use instance variable
 
-                # Handle mouse events
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        self.player_bullets.append(PlayerBullet(self.player.x, self.player.y, mouse_x, mouse_y))
-
             # Handle keyboard events
             keys = pygame.key.get_pressed()
+
             if keys[pygame.K_a]:
                 self.display_scroll[0] -= self.player_speed
-                
-                for bullet in self.player_bullets:
-                    bullet.x += self.player_speed
             if keys[pygame.K_d]:
                 self.display_scroll[0] += self.player_speed
-                
-                for bullet in self.player_bullets:
-                    bullet.x -= self.player_speed
             if keys[pygame.K_w]:
                 self.display_scroll[1] -= self.player_speed
-                
-                for bullet in self.player_bullets:
-                    bullet.y += self.player_speed
             if keys[pygame.K_s]:
                 self.display_scroll[1] += self.player_speed
-                
-                for bullet in self.player_bullets:
-                    bullet.y -= self.player_speed
             
 
             # Render screen
@@ -74,9 +57,6 @@ class Engine:
                 enemy.render(screen)
             
             self.player.render(screen, keys)
-
-            for bullet in self.player_bullets:
-                bullet.render(screen)
 
             pygame.display.flip()
             clock.tick(60)

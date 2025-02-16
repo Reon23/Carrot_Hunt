@@ -3,7 +3,7 @@ import pygame
 class Animate:
 
     #Initalize Animate variables
-    def __init__(self, sprite_sheet, x, y, width, height, frames, frame_row, scale):
+    def __init__(self, sprite_sheet, x, y, width, height, frames, frame_row, scale, speed):
         self.sprite_sheet = pygame.image.load(str(sprite_sheet)).convert_alpha()
         
         self.x = x
@@ -16,7 +16,7 @@ class Animate:
         self.frame = 0
         self.animation_list = []
         self.last_update = pygame.time.get_ticks()
-        self.animation_cooldown = 50
+        self.animation_cooldown = speed
         self.last_angle = 0
         for i in range(self.frames):
             self.animation_list.append(self.getFrame(self.sprite_sheet, i, frame_row, self.width, self.height, self.scale))

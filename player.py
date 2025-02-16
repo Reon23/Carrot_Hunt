@@ -6,21 +6,22 @@ from weapons import ak47
 class Player:
     
     #Initalize player variables
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, player_speed):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.player_speed = player_speed
         self.animations = {
-            "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2),
-            "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2),
-            "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 0, 2),
+            "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2, 50),
+            "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
+            "r": Animate('./assets/player/walk_right.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
         }
         self.direction = "d"
         self.current_animation = self.animations[self.direction]
         self.play_animation = False
 
-        self.player_weapon = ak47(self.x, self.y, 0.8)
+        self.player_weapon = ak47(self.x, self.y, 0.8, self.player_speed)
     
     def render(self, screen, keys):
         self.direction = "d"
@@ -48,23 +49,4 @@ class Player:
 
         # Animate current frame
         self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
-        self.player_weapon.render(screen, self.x, self.y)
-
-class PlayerBullet:
-
-    #Initalize bullet variables
-    def __init__(self, x, y, mouse_x, mouse_y):
-        self.x = x
-        self.y = y
-        self.mouse_x = mouse_x
-        self.mouse_y = mouse_y
-        self.speed = 15
-        self.angle = math.atan2(y-mouse_y, x-mouse_x)
-        self.x_vel = math.cos(self.angle) * self.speed
-        self.y_vel = math.sin(self.angle) * self.speed
-
-    def render(self, screen):
-        self.x -= int(self.x_vel)
-        self.y -= int(self.y_vel)
-
-        pygame.draw.circle(screen, "black", (self.x, self.y), 5) 
+        self.player_weapon.render(screen, self.x, self.y, keys)
