@@ -11,6 +11,7 @@ class Animate:
         self.width = width
         self.height = height
         self.scale = scale
+        self.image_flipped = False
         
         self.frames = frames
         self.frame = 0
@@ -30,6 +31,25 @@ class Animate:
         frame = pygame.transform.scale(frame, (self.width * scale, self.height * scale))
         return frame
 
+    def animate_old(self, screen, render_x, render_y, flipped = False):
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.last_update >= self.animation_cooldown:
+            self.last_update = current_time  # Reset last update time
+            self.frame += 1  # Move to next frame
+            
+            if self.frame >= self.frames:  # Loop back to first frame
+                self.frame = 0
+
+        image = self.animation_list[self.frame]
+        if flipped:
+            image = pygame.transform.flip(image, True, False)
+            image_width = image.get_width()
+            screen.blit(image, (render_x, render_y))
+        else:
+            self.image_flipped = False
+            screen.blit(image, (render_x, render_y))
+
     def animate(self, screen, play, render_x, render_y, angle, flipped):
         current_time = pygame.time.get_ticks()
 
@@ -38,11 +58,22 @@ class Animate:
                 self.last_update = current_time
                 self.frame = (self.frame + 1) % self.frames  # Loop animation frames
 
-        rotated_image = pygame.transform.rotate(self.animation_list[self.frame], angle)
+        original_image = self.animation_list[self.frame]
+        rotated_image = pygame.transform.rotate(original_image, angle)
+        
+        # Store original size before flipping
+        original_width = rotated_image.get_width()
 
         # Flip the image if needed
         if flipped:
             rotated_image = pygame.transform.flip(rotated_image, True, False)
-        new_rect = rotated_image.get_rect(center=(render_x, render_y))  # Keep correct positioning
+
+        # Compute the offset difference after flipping
+        flipped_width = rotated_image.get_width()
+        offset_x = (flipped_width - original_width) if flipped else 0
+
+        # Maintain correct positioning
+        new_rect = rotated_image.get_rect(center=(render_x - offset_x, render_y))
 
         screen.blit(rotated_image, new_rect.topleft)
+

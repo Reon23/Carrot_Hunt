@@ -23,7 +23,6 @@ class Engine:
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.spawnEnemy()
-        self.spawnEnemy()
 
     def spawnEnemy(self):
         self.enemy_list.append(Morph1(random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 128, 64, 3)) 
@@ -53,8 +52,7 @@ class Engine:
 
             for enemy in self.enemy_list:
                 enemy.updatePosition(self.display_scroll)
-                enemy.moveToPlayer(self.player.x - 64, self.player.y - 64, self.display_scroll)
-                enemy.render(screen)
+                enemy.render(screen, (self.player.x - (self.player.width * 2)), (self.player.y - (self.player.height * 2)), self.display_scroll)
             
             self.player.render(screen, keys)
 

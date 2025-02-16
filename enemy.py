@@ -21,12 +21,8 @@ class Morph1:
             "follow" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50)
         }
         self.mode = "idle"
+        self.flipped = False
     
-        # Variables to create a wobbly/sloppy movement effect
-        self.sloppy_offset_x = random.uniform(-10, 10)
-        self.sloppy_offset_y = random.uniform(-10, 10)
-        self.sloppy_timer = 0   
-
         # Distance at which enemy stops moving toward the player
         self.stop_radius = 150  # Enemy stops moving within this radius from the player
 
@@ -35,36 +31,40 @@ class Morph1:
         self.render_y = self.y - display_scroll[1]  
 
     def moveToPlayer(self, player_x, player_y, display_scroll):
-        # Adjust player's position with display scroll
-        adjusted_player_x = player_x + display_scroll[0]
-        adjusted_player_y = player_y + display_scroll[1]
-
         # Calculate direction vector
-        dx = adjusted_player_x - self.x
-        dy = adjusted_player_y - self.y
+        if not self.flipped:
+            dx = (player_x + display_scroll[0]) - (self.x + (self.width//2 - 40))
+        else:
+            dx = (player_x + display_scroll[0]) - (self.x + (self.width//2 + 40)) + self.stop_radius
+        print(dx)
+        if dx < 0:
+            self.flipped = True
+        else:
+            self.flipped = False
+        # dx = player_x + display_scroll[0] - self.x
+        dy = (player_y + display_scroll[1]) - (self.y + (self.height))
 
-        # Calculate the distance
+        # Calculate the distance to prevent division by zero
         distance = math.sqrt(dx**2 + dy**2)
         
-        # Enemy stops moving if it's within the stop radius
         if distance > self.stop_radius:
-            if distance != 0:
-                # Normalize the direction
-                dx /= distance
-                dy /= distance
-
-                # Introduce a slight delay before changing the randomness
-                self.sloppy_timer += 1
-                if self.sloppy_timer % 10 == 0:  # Change direction slightly every 10 frames
-                    self.sloppy_offset_x = random.uniform(-1.5, 1.5)
-                    self.sloppy_offset_y = random.uniform(-1.5, 1.5)
-
-                # Apply movement with a bit of randomness
-                self.x += (dx * self.speed) + self.sloppy_offset_x
-                self.y += (dy * self.speed) + self.sloppy_offset_y
-                self.mode = "follow"
+            # Normalize the direction and apply speed
+            self.x += (dx / distance) * self.speed
+            self.y += (dy / distance) * self.speed
+            self.mode = "follow"
         else:
-            self.mode = "idle"  # Enemy stops moving
+            self.mode = "idle"
     
-    def render(self, screen):
-        self.animations[self.mode].animate(screen, True, self.render_x, self.render_y, 0, False)
+    def render(self, screen, player_x, player_y, display_scroll):
+        
+
+        # Render with corrected position
+        self.moveToPlayer(player_x, player_y, display_scroll)
+        # self.animations[self.mode].animate(screen, True, self.render_x, self.render_y, 0, False)
+        if self.flipped:
+            self.animations[self.mode].animate_old(screen, self.render_x - 200, self.render_y, self.flipped)
+        else:
+            self.animations[self.mode].animate_old(screen, self.render_x, self.render_y, self.flipped)
+
+
+
