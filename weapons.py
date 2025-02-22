@@ -2,7 +2,7 @@ import pygame
 import math
 from animator import Animate
 
-bullets = []
+bullets = pygame.sprite.Group()
 
 class ak47:
 
@@ -15,6 +15,7 @@ class ak47:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 50
+        self.bullet_damage = 10
         self.last_update = pygame.time.get_ticks()
         self.cooldown = 420
         self.player_speed = player_speed
@@ -55,7 +56,7 @@ class ak47:
             muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
             muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
 
-            bullets.append(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, 50, 5))
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 50, 5))
 
 
     def renderBullets(self, screen, keys):
@@ -98,7 +99,7 @@ class ak47:
 class Bullet:
     
     #Initalize bullet variables
-    def __init__(self, x, y, mouse_x, mouse_y, speed, angle, width = 10, height = 10, color = "yellow", lifetime = 250):
+    def __init__(self, x, y, mouse_x, mouse_y, speed, angle, damage, width = 10, height = 10, color = "yellow", lifetime = 250):
         self.x = x
         self.y = y
         self.width = width
@@ -108,6 +109,7 @@ class Bullet:
         self.mouse_y = mouse_y
         self.speed = speed
         self.bullet_angle = angle
+        self.damage = damage
         self.angle = math.atan2(y-mouse_y, x-mouse_x)
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
@@ -121,16 +123,16 @@ class Bullet:
         self.bullet_lifetime = lifetime
 
     def kill(self):
-        bullets.remove(self)
+        bullets.remove_internal(self)
     
     def render(self, screen, flipped):
         current_time = pygame.time.get_ticks()
         self.x -= int(self.x_vel)
         self.y -= int(self.y_vel)
-
+        
         if current_time - self.last_update >= self.bullet_lifetime:
             self.last_update = current_time
-            self.kill()
+            bullets.remove_internal(self)
         
         # Rotate the bullet image
         if not flipped:

@@ -1,7 +1,8 @@
 import pygame
 import random
 from player import Player
-from enemy import Morph1
+from enemy import enemy_list, Morph1
+from weapons import bullets
 
 # Constants
 SCREEN_WIDTH = 1280
@@ -19,13 +20,13 @@ class Engine:
     def __init__(self):
         self.running = True
         self.display_scroll = [0, 0]
-        self.enemy_list = []
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
-        self.spawnEnemy()
+        for _ in range(5):
+            self.spawnEnemy()
 
     def spawnEnemy(self):
-        self.enemy_list.append(Morph1(random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 128, 64, 3)) 
+        enemy_list.add_internal(Morph1(random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 128, 64, 3)) 
 
     def run(self):
         while self.running:
@@ -50,8 +51,9 @@ class Engine:
             # Render screen
             screen.fill("green")
 
-            for enemy in self.enemy_list:
+            for enemy in enemy_list:
                 enemy.updatePosition(self.display_scroll)
+                enemy.handleCollision(bullets)
                 enemy.render(screen, (self.player.x - (self.player.width * 2)), (self.player.y - (self.player.height * 2)), self.display_scroll)
             
             self.player.render(screen, keys)
