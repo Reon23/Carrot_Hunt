@@ -1,7 +1,7 @@
 import pygame
 import math
+import numpy as np
 from animator import Animate
-        
         
 enemy_list = pygame.sprite.Group()
 
@@ -17,18 +17,27 @@ class Morph1(pygame.sprite.Sprite):
 
         self.render_x = x
         self.render_y = y
+        
         self.health = 50
+        self.weakened_health = 20
         self.hurt = False
+        self.attack = False
+        self.post_attack_delay = 8000  # Rest time before another attack
+        self.last_post_attack_time = 0  # Tracks when attack was completed
+        self.selected_attack = None
+        self.last_attact_time = 0
+        self.attack_cooldwon = 300
         self.last_hit_time = 0
         self.hit_cooldown = 2000
-        # self.death_start_time = None
-        # self.death_duration = 1000
 
         self.animations = {
             "idle" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
             "follow" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
-            "hit" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 50),
-            "death" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50)
+            "hit" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
+            "death" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
+
+            "atk1" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
+            "atk2" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 50)
         }
         self.mode = "idle"
         self.flipped = False
@@ -79,35 +88,70 @@ class Morph1(pygame.sprite.Sprite):
             separation_y = (separation_y / separation_magnitude) * self.speed
 
         # Move only if outside stop radius
-        if distance > self.stop_radius:
+        if distance > self.stop_radius and not self.attack:
             # Normalize movement vector
             self.x += (dx / distance) * self.speed + separation_x
             self.y += (dy / distance) * self.speed + separation_y
             
             self.mode = "hit" if self.hurt else "follow"
         else:
-            self.mode = "hit" if self.hurt else "idle"
+            if self.hurt:
+                self.mode = "hit"
+            else:
+                if not self.attack:
+                    self.mode = "idle"
+            self.attack = True if not self.hurt else False
+
+    def handleAttack(self):
+        current_time = pygame.time.get_ticks()
+        options = ["atk1", "atk2"]
+        probabilities = [0.7, 0.3]
+
+        # If the enemy is in the post-attack delay, it should not attack
+        if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
+            print("Waiting for post-attack delay")
+            self.attack = False
+            return
+
+        # If no attack is selected, choose one and start attack cooldown
+        if self.selected_attack is None:
+            self.selected_attack = np.random.choice(options, p=probabilities)
+            self.last_attact_time = current_time  # Start attack cooldown timer
+            print(f"Enemy attacking with: {self.selected_attack}")
+            self.mode = self.selected_attack
+            self.attack = True  # Set attack to True when actually attacking
+
+        # If attack is finished (cooldown over), enter post-attack delay
+        if current_time - self.last_attact_time >= self.attack_cooldwon:
+            print("Attack finished, entering post-attack delay")
+            self.selected_attack = None  # Reset attack selection
+            self.last_post_attack_time = current_time  # Start post-attack delay timer
+            self.attack = False  # Enemy is no longer attacking
 
     def handleCollision(self, bullet_group):
+        # start timer when hurt
         if self.hurt:
             current = pygame.time.get_ticks()
         else:
             current = 0
+        # Enemy hitbox
         enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
-        # pygame.draw.rect(screen, "red", enemy_rect)
         for bullet in bullet_group.sprites():  # Iterate over bullets properly
             bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
             if enemy_rect.colliderect(bullet_rect):  # Check collision
-                print("hit")
-                self.hurt = True
+                print(self.health)
                 self.health -= bullet.damage
+                
+                if self.health <= self.weakened_health:
+                    self.hurt = True
                 self.mode = "hit"
                 bullet.kill()  # Remove bullet on impact
 
+        # reset weakened status after cooldown
         if current - self.last_hit_time >= self.hit_cooldown:
-            print("reset")
             self.last_hit_time = current
             self.hurt = False
+            self.health = self.weakened_health + self.weakened_health//4
 
         if self.health <= 0:
             self.mode = "death"
@@ -115,10 +159,13 @@ class Morph1(pygame.sprite.Sprite):
 
     def render(self, screen, player_x, player_y, display_scroll):
         
-        # Render with corrected position
-        self.moveToPlayer(player_x, player_y, display_scroll)
+        if not self.hurt or self.attack:
+            self.moveToPlayer(player_x, player_y, display_scroll)
 
-        # self.animations[self.mode].animate(screen, True, self.render_x, self.render_y, 0, False)
+        if self.attack:
+            self.handleAttack()
+
+        # Render with corrected position
         if self.flipped:
             self.animations[self.mode].animate_old(screen, self.render_x - 200, self.render_y, self.flipped)
         else:
