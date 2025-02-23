@@ -2,8 +2,29 @@ import pygame
 import math
 import numpy as np
 from animator import Animate
-        
+from numba import njit
+
 enemy_list = pygame.sprite.Group()
+
+# This function computes the separation force for enemy avoidance.
+@njit
+def compute_separation(x, y, speed, enemy_positions, min_separation_distance):
+    separation_x = 0.0
+    separation_y = 0.0
+    for i in range(enemy_positions.shape[0]):
+        ex = enemy_positions[i, 0]
+        ey = enemy_positions[i, 1]
+        diff_x = x - ex
+        diff_y = y - ey
+        enemy_distance = math.sqrt(diff_x * diff_x + diff_y * diff_y)
+        if enemy_distance < min_separation_distance and enemy_distance > 0:
+            separation_x += diff_x / enemy_distance
+            separation_y += diff_y / enemy_distance
+    separation_magnitude = math.sqrt(separation_x * separation_x + separation_y * separation_y)
+    if separation_magnitude > 0:
+        separation_x = (separation_x / separation_magnitude) * speed
+        separation_y = (separation_y / separation_magnitude) * speed
+    return separation_x, separation_y
 
 class Morph1(pygame.sprite.Sprite):
     
@@ -19,10 +40,10 @@ class Morph1(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 50
-        self.weakened_health = 20
+        self.weakened_health = 10
         self.hurt = False
         self.attack = False
-        self.post_attack_delay = 8000  # Rest time before another attack
+        self.post_attack_delay = 5000  # Rest time before another attack
         self.last_post_attack_time = 0  # Tracks when attack was completed
         self.selected_attack = None
         self.last_attact_time = 0
@@ -35,7 +56,6 @@ class Morph1(pygame.sprite.Sprite):
             "follow" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
             "hit" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
             "death" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
-
             "atk1" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
             "atk2" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 50)
         }
@@ -66,33 +86,23 @@ class Morph1(pygame.sprite.Sprite):
         # Calculate distance to player
         distance = math.sqrt(dx**2 + dy**2)
 
-        # ** Separation logic to prevent enemies from overlapping **
-        separation_x, separation_y = 0, 0
+        # Separation logic to prevent enemies from overlapping
         min_separation_distance = 100  # Adjust based on enemy size
-
+        enemy_positions = []
         for other in enemy_list:
-            if other != self:  # Don't check against itself
-                diff_x = self.x - other.x
-                diff_y = self.y - other.y
-                enemy_distance = math.sqrt(diff_x**2 + diff_y**2)
-
-                if enemy_distance < min_separation_distance:  # If too close
-                    # Apply a force away from the other enemy
-                    separation_x += diff_x / enemy_distance
-                    separation_y += diff_y / enemy_distance
-
-        # Normalize the separation force
-        separation_magnitude = math.sqrt(separation_x**2 + separation_y**2)
-        if separation_magnitude > 0:
-            separation_x = (separation_x / separation_magnitude) * self.speed
-            separation_y = (separation_y / separation_magnitude) * self.speed
+            if other != self:
+                enemy_positions.append((other.x, other.y))
+        if enemy_positions:
+            enemy_positions = np.array(enemy_positions, dtype=np.float64)
+            separation_x, separation_y = compute_separation(self.x, self.y, self.speed, enemy_positions, min_separation_distance)
+        else:
+            separation_x, separation_y = 0.0, 0.0
 
         # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
-            # Normalize movement vector
+            # Normalize movement vector and add separation force
             self.x += (dx / distance) * self.speed + separation_x
             self.y += (dy / distance) * self.speed + separation_y
-            
             self.mode = "hit" if self.hurt else "follow"
         else:
             if self.hurt:
@@ -109,21 +119,21 @@ class Morph1(pygame.sprite.Sprite):
 
         # If the enemy is in the post-attack delay, it should not attack
         if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
-            print("Waiting for post-attack delay")
             self.attack = False
             return
 
         # If no attack is selected, choose one and start attack cooldown
         if self.selected_attack is None:
             self.selected_attack = np.random.choice(options, p=probabilities)
+            animation = self.animations[self.selected_attack]
+            animation_duration = animation.frames * animation.animation_cooldown
+            self.attack_cooldwon = animation_duration
             self.last_attact_time = current_time  # Start attack cooldown timer
-            print(f"Enemy attacking with: {self.selected_attack}")
             self.mode = self.selected_attack
             self.attack = True  # Set attack to True when actually attacking
 
         # If attack is finished (cooldown over), enter post-attack delay
         if current_time - self.last_attact_time >= self.attack_cooldwon:
-            print("Attack finished, entering post-attack delay")
             self.selected_attack = None  # Reset attack selection
             self.last_post_attack_time = current_time  # Start post-attack delay timer
             self.attack = False  # Enemy is no longer attacking
@@ -136,10 +146,9 @@ class Morph1(pygame.sprite.Sprite):
             current = 0
         # Enemy hitbox
         enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
-        for bullet in bullet_group.sprites():  # Iterate over bullets properly
+        for bullet in bullet_group.sprites():
             bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
-            if enemy_rect.colliderect(bullet_rect):  # Check collision
-                print(self.health)
+            if enemy_rect.colliderect(bullet_rect):
                 self.health -= bullet.damage
                 
                 if self.health <= self.weakened_health:
@@ -147,11 +156,11 @@ class Morph1(pygame.sprite.Sprite):
                 self.mode = "hit"
                 bullet.kill()  # Remove bullet on impact
 
-        # reset weakened status after cooldown
+        # Reset weakened status after cooldown
         if current - self.last_hit_time >= self.hit_cooldown:
             self.last_hit_time = current
             self.hurt = False
-            self.health = self.weakened_health + self.weakened_health//4
+            self.health = self.weakened_health + self.weakened_health//2
 
         if self.health <= 0:
             self.mode = "death"

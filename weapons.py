@@ -17,7 +17,6 @@ class ak47:
         self.bullet_speed = 50
         self.bullet_damage = 10
         self.last_update = pygame.time.get_ticks()
-        self.cooldown = 420
         self.player_speed = player_speed
 
         self.animations = {
@@ -45,8 +44,10 @@ class ak47:
     
     def handleFire(self, pos_x, pos_y, angle):
         current_time = pygame.time.get_ticks()
+        animation = self.animations[self.weapon_state]
+        animation_duration = animation.frames * animation.animation_cooldown
 
-        if current_time - self.last_update >= self.cooldown:
+        if current_time - self.last_update >= animation_duration: 
             self.last_update = current_time
             
             angle = self.rotateWeapon(pos_x, pos_y)

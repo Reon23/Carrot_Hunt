@@ -14,30 +14,43 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Cursed Carrots')
 clock = pygame.time.Clock()
 
+# Font setup for FPS display
+pygame.font.init()
+font = pygame.font.Font(None, 30)  # Default pygame font
+
 class Engine:
 
-    # initialize variables
+    # Initialize variables
     def __init__(self):
         self.running = True
         self.display_scroll = [0, 0]
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
+
         for _ in range(5):
             self.spawnEnemy()
 
     def spawnEnemy(self):
-        enemy_list.add_internal(Morph1(random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 128, 64, 3)) 
+        enemy_list.add_internal(Morph1(
+            random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), 
+            random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 
+            128, 64, 3
+        ))
+
+    def render_fps(self):
+        """Displays the FPS counter on the screen."""
+        fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, (255, 255, 255))
+        screen.blit(fps_text, (10, 10))  # Draw FPS in the top-left corner
 
     def run(self):
         while self.running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False  # Use instance variable
+                    self.running = False
 
             # Handle keyboard events
             keys = pygame.key.get_pressed()
-
             if keys[pygame.K_a]:
                 self.display_scroll[0] -= self.player_speed
             if keys[pygame.K_d]:
@@ -46,7 +59,6 @@ class Engine:
                 self.display_scroll[1] -= self.player_speed
             if keys[pygame.K_s]:
                 self.display_scroll[1] += self.player_speed
-            
 
             # Render screen
             screen.fill("green")
@@ -54,9 +66,13 @@ class Engine:
             for enemy in enemy_list:
                 enemy.updatePosition(self.display_scroll)
                 enemy.handleCollision(bullets)
-                enemy.render(screen, (self.player.x - (self.player.width * 2)), (self.player.y - (self.player.height * 2)), self.display_scroll)
-            
+                enemy.render(screen, (self.player.x - (self.player.width * 2)), 
+                             (self.player.y - (self.player.height * 2)), self.display_scroll)
+
             self.player.render(screen, keys)
+
+            # Render FPS counter
+            self.render_fps()
 
             pygame.display.flip()
             clock.tick(60)
