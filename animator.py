@@ -1,35 +1,33 @@
 import pygame
 
 class Animate:
-
-    #Initalize Animate variables
-    def __init__(self, sprite_sheet, x, y, width, height, frames, frame_row, scale, speed):
-        self.sprite_sheet = pygame.image.load(str(sprite_sheet)).convert_alpha()
+    sprite_cache = {}  # Dictionary to store loaded sprite sheets
+    
+    def __init__(self, sprite_sheet_path, x, y, width, height, frames, frame_row, scale, speed):
+        if sprite_sheet_path not in Animate.sprite_cache:
+            Animate.sprite_cache[sprite_sheet_path] = pygame.image.load(str(sprite_sheet_path)).convert_alpha()
         
+        self.sprite_sheet = Animate.sprite_cache[sprite_sheet_path]  # Use cached image
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.scale = scale
-        self.image_flipped = False
-        
         self.frames = frames
         self.frame = 0
         self.animation_list = []
         self.last_update = pygame.time.get_ticks()
         self.animation_cooldown = speed
-        self.last_angle = 0
+
         for i in range(self.frames):
             self.animation_list.append(self.getFrame(self.sprite_sheet, i, frame_row, self.width, self.height, self.scale))
 
     # Fetch single frame from sprite sheet
     def getFrame(self, sprite_sheet, xframe_no, yframe_no, width, height, scale):
-        # Create empty frame
-        frame = pygame.Surface((width, height), pygame.SRCALPHA)
-        # Paste sprite_sheet onto frame
-        frame.blit(sprite_sheet, (0,0), (int(xframe_no * self.width), int(yframe_no * self.height), self.width, self.height))
-        frame = pygame.transform.scale(frame, (self.width * scale, self.height * scale))
-        return frame
+        frame = sprite_sheet.subsurface(pygame.Rect(
+            xframe_no * width, yframe_no * height, width, height
+        ))  # Directly crop the frame
+        return pygame.transform.scale(frame, (width * scale, height * scale))
 
     def animate_old(self, screen, render_x, render_y, flipped = False):
         current_time = pygame.time.get_ticks()

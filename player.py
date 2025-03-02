@@ -2,6 +2,7 @@ import pygame
 import math
 from animator import Animate
 from weapons import ak47
+from hud import healthBar
 
 class Player:
     
@@ -12,6 +13,7 @@ class Player:
         self.width = width
         self.height = height
         self.player_speed = player_speed
+        self.player_health = healthBar(100)
         self.animations = {
             "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2, 50),
             "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
@@ -22,6 +24,9 @@ class Player:
         self.play_animation = False
 
         self.player_weapon = ak47(self.x, self.y, 0.8, self.player_speed)
+    
+    def hurt(self, damage):
+        self.player_health.updateHealth(damage)
     
     def render(self, screen, keys):
         self.direction = "d"
@@ -50,3 +55,4 @@ class Player:
         # Animate current frame
         self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
         self.player_weapon.render(screen, self.x, self.y, keys)
+        self.player_health.render(screen)

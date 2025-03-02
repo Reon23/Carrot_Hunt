@@ -1,12 +1,16 @@
 import pygame
 import random
-from player import Player
-from enemy import enemy_list, Morph1
-from weapons import bullets
 
 # Constants
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
+# Culling margin (prevents pop-in)
+CULLING_MARGIN = 100  
+
+from player import Player
+from enemy import enemy_list, Morph1
+from weapons import bullets
+
 
 # pygame setup
 pygame.init()
@@ -42,6 +46,7 @@ class Engine:
         fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, (255, 255, 255))
         screen.blit(fps_text, (10, 10))  # Draw FPS in the top-left corner
 
+
     def run(self):
         while self.running:
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -63,11 +68,22 @@ class Engine:
             # Render screen
             screen.fill("green")
 
+            # **Optimize Enemy Rendering with Culling Offset**
+            screen_rect = pygame.Rect(
+                self.display_scroll[0] - CULLING_MARGIN, 
+                self.display_scroll[1] - CULLING_MARGIN, 
+                SCREEN_WIDTH + (CULLING_MARGIN * 2), 
+                SCREEN_HEIGHT + (CULLING_MARGIN * 2)
+            )
+
             for enemy in enemy_list:
-                enemy.updatePosition(self.display_scroll)
+                enemy.updatePosition(self.display_scroll, self.player, screen)
                 enemy.handleCollision(bullets)
-                enemy.render(screen, (self.player.x - (self.player.width * 2)), 
-                             (self.player.y - (self.player.height * 2)), self.display_scroll)
+
+                # **Only render enemies near or inside the screen view**
+                enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
+                if screen_rect.colliderect(enemy_rect):
+                    enemy.render(screen)
 
             self.player.render(screen, keys)
 

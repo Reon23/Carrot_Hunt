@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 import numpy as np
 from animator import Animate
 from numba import njit
@@ -43,6 +44,7 @@ class Morph1(pygame.sprite.Sprite):
         self.weakened_health = 10
         self.hurt = False
         self.attack = False
+        self.attack_hit = False
         self.post_attack_delay = 5000  # Rest time before another attack
         self.last_post_attack_time = 0  # Tracks when attack was completed
         self.selected_attack = None
@@ -65,9 +67,17 @@ class Morph1(pygame.sprite.Sprite):
         # Distance at which enemy stops moving toward the player
         self.stop_radius = 150  # Enemy stops moving within this radius from the player
 
-    def updatePosition(self, display_scroll):
+    def updatePosition(self, display_scroll, player, screen):
+        player_x = player.x - (player.width * 2)
+        player_y = player.y - (player.height * 2)
         self.render_x = self.x - display_scroll[0]
         self.render_y = self.y - display_scroll[1]  
+        
+        if not self.hurt or self.attack:
+            self.moveToPlayer(player_x, player_y, display_scroll)
+
+        if self.attack:
+            self.handleAttack(player, screen)
 
     def moveToPlayer(self, player_x, player_y, display_scroll):
         # Calculate direction vector to the player
@@ -87,7 +97,7 @@ class Morph1(pygame.sprite.Sprite):
         distance = math.sqrt(dx**2 + dy**2)
 
         # Separation logic to prevent enemies from overlapping
-        min_separation_distance = 100  # Adjust based on enemy size
+        min_separation_distance = 150  # Adjust based on enemy size
         enemy_positions = []
         for other in enemy_list:
             if other != self:
@@ -112,7 +122,7 @@ class Morph1(pygame.sprite.Sprite):
                     self.mode = "idle"
             self.attack = True if not self.hurt else False
 
-    def handleAttack(self):
+    def handleAttack(self, player, screen):
         current_time = pygame.time.get_ticks()
         options = ["atk1", "atk2"]
         probabilities = [0.7, 0.3]
@@ -131,12 +141,61 @@ class Morph1(pygame.sprite.Sprite):
             self.last_attact_time = current_time  # Start attack cooldown timer
             self.mode = self.selected_attack
             self.attack = True  # Set attack to True when actually attacking
+        
+        self.attackHit(self.mode, player, screen)
 
         # If attack is finished (cooldown over), enter post-attack delay
         if current_time - self.last_attact_time >= self.attack_cooldwon:
             self.selected_attack = None  # Reset attack selection
             self.last_post_attack_time = current_time  # Start post-attack delay timer
             self.attack = False  # Enemy is no longer attacking
+            self.attack_hit = False
+    
+    def attackHit(self, type, player, screen):
+        player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
+        if self.attack:
+            
+            if type == "atk1":
+                if not self.flipped:
+                    enemy_rect = pygame.Rect(self.render_x + self.width//2 + 50, 
+                            self.render_y + self.height + 30, 
+                            self.width + 40, 
+                            self.height
+                            )
+                else:
+                    enemy_rect = pygame.Rect(self.render_x - self.width//2 - 50, 
+                            self.render_y + self.height + 30, 
+                            self.width + 40, 
+                            self.height
+                            )
+                pygame.draw.rect(screen, "red", enemy_rect)
+                if enemy_rect.colliderect(player_rect):
+                    if not self.attack_hit:
+                        player.hurt(10)
+                        print(player.player_health.health)
+                        self.attack_hit = True
+                        print("hit")
+            
+            elif type == "atk2":
+                if not self.flipped:
+                    enemy_rect = pygame.Rect(self.render_x + self.width//2 + 50, 
+                            self.render_y + self.height, 
+                            self.width + 100, 
+                            self.height + 50
+                            )
+                else:
+                    enemy_rect = pygame.Rect(self.render_x - self.width//2 - 50, 
+                            self.render_y + self.height, 
+                            self.width + 100, 
+                            self.height + 50
+                            )
+                pygame.draw.rect(screen, "red", enemy_rect)
+                if enemy_rect.colliderect(player_rect):
+                    if not self.attack_hit:
+                        player.hurt(10)
+                        self.attack_hit = True
+                        print("hit")
+
 
     def handleCollision(self, bullet_group):
         # start timer when hurt
@@ -153,7 +212,7 @@ class Morph1(pygame.sprite.Sprite):
                 
                 if self.health <= self.weakened_health:
                     self.hurt = True
-                self.mode = "hit"
+                    self.mode = "hit"
                 bullet.kill()  # Remove bullet on impact
 
         # Reset weakened status after cooldown
@@ -166,14 +225,7 @@ class Morph1(pygame.sprite.Sprite):
             self.mode = "death"
             enemy_list.remove_internal(self)  # Remove enemy when health reaches zero
 
-    def render(self, screen, player_x, player_y, display_scroll):
-        
-        if not self.hurt or self.attack:
-            self.moveToPlayer(player_x, player_y, display_scroll)
-
-        if self.attack:
-            self.handleAttack()
-
+    def render(self, screen):
         # Render with corrected position
         if self.flipped:
             self.animations[self.mode].animate_old(screen, self.render_x - 200, self.render_y, self.flipped)
