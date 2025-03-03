@@ -11,7 +11,7 @@ class healthBar:
         self.width = SCREEN_WIDTH // 3
     
     def updateHealth(self, value):
-        self.health = max(0, self.health - value)  # Prevents health from going negative
+        self.health = value  # Prevents health from going negative
 
     def render(self, screen):
         current_width = max(0, (self.width * (self.health / self.max_health)))  # Smooth scaling

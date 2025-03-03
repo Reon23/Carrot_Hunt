@@ -9,7 +9,7 @@ enemy_list = pygame.sprite.Group()
 
 # This function computes the separation force for enemy avoidance.
 @njit
-def compute_separation(x, y, speed, enemy_positions, min_separation_distance):
+def compute_separation(x, y, speed, enemy_positions, min_separation_distance, smoothing=0.2):
     separation_x = 0.0
     separation_y = 0.0
     for i in range(enemy_positions.shape[0]):
@@ -21,11 +21,13 @@ def compute_separation(x, y, speed, enemy_positions, min_separation_distance):
         if enemy_distance < min_separation_distance and enemy_distance > 0:
             separation_x += diff_x / enemy_distance
             separation_y += diff_y / enemy_distance
+
     separation_magnitude = math.sqrt(separation_x * separation_x + separation_y * separation_y)
     if separation_magnitude > 0:
-        separation_x = (separation_x / separation_magnitude) * speed
-        separation_y = (separation_y / separation_magnitude) * speed
+        separation_x = (separation_x / separation_magnitude) * speed * smoothing
+        separation_y = (separation_y / separation_magnitude) * speed * smoothing
     return separation_x, separation_y
+
 
 class Morph1(pygame.sprite.Sprite):
     
@@ -59,13 +61,13 @@ class Morph1(pygame.sprite.Sprite):
             "hit" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
             "death" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
             "atk1" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
-            "atk2" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 50)
+            "atk2" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 120)
         }
         self.mode = "idle"
         self.flipped = False
     
         # Distance at which enemy stops moving toward the player
-        self.stop_radius = 150  # Enemy stops moving within this radius from the player
+        self.stop_radius = 80  # Enemy stops moving within this radius from the player
 
     def updatePosition(self, display_scroll, player, screen):
         player_x = player.x - (player.width * 2)
@@ -168,13 +170,11 @@ class Morph1(pygame.sprite.Sprite):
                             self.width + 40, 
                             self.height
                             )
-                pygame.draw.rect(screen, "red", enemy_rect)
+                # pygame.draw.rect(screen, "red", enemy_rect)
                 if enemy_rect.colliderect(player_rect):
                     if not self.attack_hit:
                         player.hurt(10)
-                        print(player.player_health.health)
                         self.attack_hit = True
-                        print("hit")
             
             elif type == "atk2":
                 if not self.flipped:
@@ -189,12 +189,11 @@ class Morph1(pygame.sprite.Sprite):
                             self.width + 100, 
                             self.height + 50
                             )
-                pygame.draw.rect(screen, "red", enemy_rect)
+                # pygame.draw.rect(screen, "red", enemy_rect)
                 if enemy_rect.colliderect(player_rect):
                     if not self.attack_hit:
                         player.hurt(10)
                         self.attack_hit = True
-                        print("hit")
 
 
     def handleCollision(self, bullet_group):

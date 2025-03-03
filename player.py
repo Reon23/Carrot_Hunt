@@ -26,8 +26,13 @@ class Player:
         self.player_weapon = ak47(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):
-        self.player_health.updateHealth(damage)
+        self.player_health.updateHealth(max(0, self.player_health.health - damage))
+        if self.player_health.health - damage <= 0:
+            self.kill()
     
+    def kill(self):
+        pass
+
     def render(self, screen, keys):
         self.direction = "d"
 

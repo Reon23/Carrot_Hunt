@@ -31,7 +31,7 @@ class Engine:
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
 
-        for _ in range(5):
+        for _ in range(30):
             self.spawnEnemy()
 
     def spawnEnemy(self):
