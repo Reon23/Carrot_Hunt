@@ -5,7 +5,7 @@ import random
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 # Culling margin (prevents pop-in)
-CULLING_MARGIN = 100  
+CULLING_MARGIN = 100 
 
 from player import Player
 from enemy import enemy_list, Morph1

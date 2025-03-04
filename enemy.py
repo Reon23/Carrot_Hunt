@@ -230,3 +230,146 @@ class Morph1(pygame.sprite.Sprite):
             self.animations[self.mode].animate_old(screen, self.render_x - 200, self.render_y, self.flipped)
         else:
             self.animations[self.mode].animate_old(screen, self.render_x, self.render_y, self.flipped)
+class Morph2(pygame.sprite.Sprite):
+    
+    def __init__(self, x, y, width, height, scale):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.scale = scale
+        self.speed = 3  # Slightly slower than Morph1
+
+        self.render_x = x
+        self.render_y = y
+        
+        self.health = 70  # More health than Morph1
+        self.weakened_health = 20
+        self.hurt = False
+        self.attack = False
+        self.attack_hit = False
+        self.post_attack_delay = 4000  # Rest time before another attack
+        self.last_post_attack_time = 0  # Tracks when attack was completed
+        self.selected_attack = None
+        self.last_attack_time = 0
+        self.attack_cooldown = 400
+        self.last_hit_time = 0
+        self.hit_cooldown = 2500
+
+        self.animations = {
+            "idle": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
+            "follow": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
+            "hit": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
+            "death": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
+            "atk1": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
+            "atk2": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 120)
+        }
+        self.mode = "idle"
+        self.flipped = False
+    
+        self.stop_radius = 100  # Morph2 stops a bit further away
+
+    def updatePosition(self, display_scroll, player, screen):
+        player_x = player.x - (player.width * 2)
+        player_y = player.y - (player.height * 2)
+        self.render_x = self.x - display_scroll[0]
+        self.render_y = self.y - display_scroll[1]  
+        
+        if not self.hurt or self.attack:
+            self.moveToPlayer(player_x, player_y, display_scroll)
+
+        if self.attack:
+            self.handleAttack(player, screen)
+
+    def moveToPlayer(self, player_x, player_y, display_scroll):
+        target_x = player_x + display_scroll[0]
+        enemy_center_x = self.x + (self.width // 2)
+        
+        dx = target_x - enemy_center_x
+        dy = (player_y + display_scroll[1]) - (self.y + self.height)
+
+        self.flipped = dx < 0
+        distance = math.sqrt(dx**2 + dy**2)
+
+        min_separation_distance = 120
+        enemy_positions = [(other.x, other.y) for other in enemy_list if other != self]
+        separation_x, separation_y = compute_separation(self.x, self.y, self.speed, np.array(enemy_positions, dtype=np.float64), min_separation_distance) if enemy_positions else (0.0, 0.0)
+
+        if distance > self.stop_radius and not self.attack:
+            self.x += (dx / distance) * self.speed + separation_x
+            self.y += (dy / distance) * self.speed + separation_y
+            self.mode = "hit" if self.hurt else "follow"
+        else:
+            self.mode = "hit" if self.hurt else "idle"
+            self.attack = not self.hurt
+
+    def handleAttack(self, player, screen):
+        current_time = pygame.time.get_ticks()
+        options = ["atk1", "atk2"]
+        probabilities = [0.6, 0.4]  # Higher chance for atk2
+
+        if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
+            self.attack = False
+            return
+
+        if self.selected_attack is None:
+            self.selected_attack = np.random.choice(options, p=probabilities)
+            animation = self.animations[self.selected_attack]
+            self.attack_cooldown = animation.frames * animation.animation_cooldown
+            self.last_attack_time = current_time
+            self.mode = self.selected_attack
+            self.attack = True
+        
+        self.attackHit(self.mode, player, screen)
+
+        if current_time - self.last_attack_time >= self.attack_cooldown:
+            self.selected_attack = None
+            self.last_post_attack_time = current_time
+            self.attack = False
+            self.attack_hit = False
+
+    def attackHit(self, type, player, screen):
+        player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
+        if self.attack:
+            offset = 60 if type == "atk1" else 90
+            range_width = 50 if type == "atk1" else 120
+            range_height = 40 if type == "atk1" else 60
+            
+            enemy_rect = pygame.Rect(
+                (self.render_x + self.width//2 + offset) if not self.flipped else (self.render_x - self.width//2 - offset), 
+                self.render_y + self.height, 
+                self.width + range_width, 
+                self.height + range_height
+            )
+            
+            if enemy_rect.colliderect(player_rect) and not self.attack_hit:
+                player.hurt(15 if type == "atk1" else 20)
+                self.attack_hit = True
+
+    def handleCollision(self, bullet_group):
+        if self.hurt:
+            current = pygame.time.get_ticks()
+        else:
+            current = 0
+
+        enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
+        for bullet in bullet_group.sprites():
+            if enemy_rect.colliderect(pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)):
+                self.health -= bullet.damage
+                
+                if self.health <= self.weakened_health:
+                    self.hurt = True
+                    self.mode = "hit"
+                bullet.kill()
+
+        if current - self.last_hit_time >= self.hit_cooldown:
+            self.last_hit_time = current
+            self.hurt = False
+            self.health = self.weakened_health + self.weakened_health//2
+
+        if self.health <= 0:
+            self.mode = "death"
+            enemy_list.remove_internal(self)
+
+    def render(self, screen):
+        self.animations[self.mode].animate_old(screen, self.render_x - 180 if self.flipped else self.render_x, self.render_y, self.flipped)

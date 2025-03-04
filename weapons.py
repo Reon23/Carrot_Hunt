@@ -146,3 +146,410 @@ class Bullet:
 
         # Draw the rotated bullet
         screen.blit(rotated_image, rotated_rect.topleft)
+       
+
+
+
+class M4A1:
+    def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 90
+        self.height = 45
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 60  # Faster than AK-47
+        self.bullet_damage = 8   # Lower damage than AK-47
+        self.last_update = pygame.time.get_ticks()
+        self.fire_rate = 100  # Faster fire rate (100ms cooldown)
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/m4a1/M4A1.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/m4a1/FIRE_M4A1.png', self.x, self.y, self.width, self.height, 10, 0, self.scale, 15)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)
+        
+        self.flipped = rel_x < 0
+        if self.flipped:
+            angle = -angle + 180
+        
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_update >= self.fire_rate: 
+            self.last_update = current_time
+            
+            angle = self.rotateWeapon(pos_x, pos_y)
+            muzzle_offset = 6
+            muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
+            muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
+            
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 45, 5))
+
+    def renderBullets(self, screen, keys):
+        for bullet in bullets:
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+        
+        offset_x, offset_y = (-10, 24) if self.flipped else (10, 24)
+        
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 10, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
+
+class DesertRifle:
+
+    def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 100
+        self.height = 50
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 60
+        self.bullet_damage = 12
+        self.last_update = pygame.time.get_ticks()
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/desert_rifle/idle.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/desert_rifle/shoot.png', self.x, self.y, self.width, self.height, 8, 0, self.scale, 15)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)
+        
+        self.flipped = rel_x < 0
+        
+        if self.flipped:
+            angle = -angle + 180  
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        animation = self.animations[self.weapon_state]
+        animation_duration = animation.frames * animation.animation_cooldown
+
+        if current_time - self.last_update >= animation_duration: 
+            self.last_update = current_time
+            
+            angle = self.rotateWeapon(pos_x, pos_y)
+            muzzle_offset = 8  
+            muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
+            muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
+
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 60, 6))
+
+    def renderBullets(self, screen, keys):
+        for bullet in bullets:
+            if keys[pygame.K_a]: bullet.x += self.player_speed
+            if keys[pygame.K_d]: bullet.x -= self.player_speed
+            if keys[pygame.K_w]: bullet.y += self.player_speed
+            if keys[pygame.K_s]: bullet.y -= self.player_speed
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+        offset_x, offset_y = (-12, 28) if self.flipped else (12, 28)
+
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 10, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
+
+    class Shotgun:
+     def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 96
+        self.height = 48
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 25  # Shotguns have slower bullets
+        self.bullet_damage = 15  # Higher damage per pellet
+        self.pellet_count = 5  # Number of pellets per shot
+        self.spread_angle = 20  # Spread of the pellets
+        self.fire_rate = 800  # Cooldown time in milliseconds
+        self.last_shot_time = 0
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/shotgun/SHOTGUN_IDLE.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/shotgun/SHOTGUN_FIRE.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)  # Correct angle
+
+        self.flipped = rel_x < 0  # Flip when mouse is to the left
+        if self.flipped:
+            angle = -angle + 180  # Adjust for flipped weapon
+
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time < self.fire_rate:
+            return  # Enforce fire rate cooldown
+        
+        self.last_shot_time = current_time
+        
+        base_angle = self.rotateWeapon(pos_x, pos_y)
+        muzzle_offset = 10  # Adjust based on shotgun barrel position
+        muzzle_x = pos_x + math.cos(math.radians(base_angle)) * muzzle_offset
+        muzzle_y = pos_y - math.sin(math.radians(base_angle)) * muzzle_offset
+        
+        for i in range(self.pellet_count):
+            spread = base_angle + (i - self.pellet_count // 2) * (self.spread_angle / self.pellet_count)
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, spread, self.bullet_damage, 50, 5))
+
+    def renderBullets(self, screen, keys):
+        if keys[pygame.K_a]:
+            for bullet in bullets:
+                bullet.x += self.player_speed
+        if keys[pygame.K_d]:
+            for bullet in bullets:
+                bullet.x -= self.player_speed
+        if keys[pygame.K_w]:
+            for bullet in bullets:
+                bullet.y += self.player_speed
+        if keys[pygame.K_s]:
+            for bullet in bullets:
+                bullet.y -= self.player_speed
+        
+        for bullet in bullets:
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+
+        if self.flipped:
+            offset_x, offset_y = -15, 28
+        else:
+            offset_x, offset_y = 15, 28
+        
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 10, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)    
+class Shotgun:
+
+    def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 96
+        self.height = 48
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 25  # Shotguns have slower bullets
+        self.bullet_damage = 15  # Higher damage per pellet
+        self.pellet_count = 5  # Number of pellets per shot
+        self.spread_angle = 20  # Spread of the pellets
+        self.fire_rate = 800  # Cooldown time in milliseconds
+        self.last_shot_time = 0
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/shotgun/SHOTGUN_IDLE.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/shotgun/SHOTGUN_FIRE.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)  # Correct angle
+
+        self.flipped = rel_x < 0  # Flip when mouse is to the left
+        if self.flipped:
+            angle = -angle + 180  # Adjust for flipped weapon
+
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time < self.fire_rate:
+            return  # Enforce fire rate cooldown
+        
+        self.last_shot_time = current_time
+        
+        base_angle = self.rotateWeapon(pos_x, pos_y)
+        muzzle_offset = 10  # Adjust based on shotgun barrel position
+        muzzle_x = pos_x + math.cos(math.radians(base_angle)) * muzzle_offset
+        muzzle_y = pos_y - math.sin(math.radians(base_angle)) * muzzle_offset
+        
+        for i in range(self.pellet_count):
+            spread = base_angle + (i - self.pellet_count // 2) * (self.spread_angle / self.pellet_count)
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, spread, self.bullet_damage, 50, 5))
+
+    def renderBullets(self, screen, keys):
+        if keys[pygame.K_a]:
+            for bullet in bullets:
+                bullet.x += self.player_speed
+        if keys[pygame.K_d]:
+            for bullet in bullets:
+                bullet.x -= self.player_speed
+        if keys[pygame.K_w]:
+            for bullet in bullets:
+                bullet.y += self.player_speed
+        if keys[pygame.K_s]:
+            for bullet in bullets:
+                bullet.y -= self.player_speed
+        
+        for bullet in bullets:
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+
+        if self.flipped:
+            offset_x, offset_y = -15, 28
+        else:
+            offset_x, offset_y = 15, 28
+        
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 10, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
+
+        import pygame
+
+
+class PlasmaRifle:
+    def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 96
+        self.height = 48
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 40  # Plasma bullets travel fast
+        self.bullet_damage = 12  # Moderate damage per shot
+        self.spread_angle = 5  # Small spread
+        self.fire_rate = 150  # Faster fire rate than shotgun
+        self.last_shot_time = 0
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/plasma_rifle/PLASMA_IDLE.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/plasma_rifle/PLASMA_FIRE.png', self.x, self.y, self.width, self.height, 8, 0, self.scale, 30)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)
+
+        self.flipped = rel_x < 0  # Flip when mouse is to the left
+        if self.flipped:
+            angle = -angle + 180
+
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time < self.fire_rate:
+            return  # Enforce fire rate cooldown
+        
+        self.last_shot_time = current_time
+        
+        base_angle = self.rotateWeapon(pos_x, pos_y)
+        muzzle_offset = 12  # Plasma rifle barrel position
+        muzzle_x = pos_x + math.cos(math.radians(base_angle)) * muzzle_offset
+        muzzle_y = pos_y - math.sin(math.radians(base_angle)) * muzzle_offset
+        
+        # Small spread for each shot
+        spread = base_angle + (math.random() - 0.5) * self.spread_angle
+        bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, spread, self.bullet_damage, 50, 5))
+
+    def renderBullets(self, screen, keys):
+        if keys[pygame.K_a]:
+            for bullet in bullets:
+                bullet.x += self.player_speed
+        if keys[pygame.K_d]:
+            for bullet in bullets:
+                bullet.x -= self.player_speed
+        if keys[pygame.K_w]:
+            for bullet in bullets:
+                bullet.y += self.player_speed
+        if keys[pygame.K_s]:
+            for bullet in bullets:
+                bullet.y -= self.player_speed
+        
+        for bullet in bullets:
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+
+        if self.flipped:
+            offset_x, offset_y = -12, 24
+        else:
+            offset_x, offset_y = 12, 24
+        
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 8, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
