@@ -4,7 +4,7 @@ from animator import Animate
 
 bullets = pygame.sprite.Group()
 
-class ak47:
+class Ak47:
 
     def __init__(self, x, y, scale, player_speed):
         self.x = x
@@ -15,7 +15,7 @@ class ak47:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 50
-        self.bullet_damage = 10
+        self.bullet_damage = 12
         self.last_update = pygame.time.get_ticks()
         self.player_speed = player_speed
 
@@ -154,20 +154,20 @@ class GlockP80:
     def __init__(self, x, y, scale, player_speed):
         self.x = x
         self.y = y
-        self.width = 90
-        self.height = 45
+        self.width = 64
+        self.height = 48
         self.scale = scale
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 60  # Faster than AK-47
-        self.bullet_damage = 8   # Lower damage than AK-47
+        self.bullet_damage = 5   # Lower damage than AK-47
         self.last_update = pygame.time.get_ticks()
-        self.fire_rate = 100  # Faster fire rate (100ms cooldown)
+        self.fire_rate = 150  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
 
         self.animations = {
-            "idle": Animate('./assets/weapons/m4a1/M4A1.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
-            "shoot": Animate('./assets/weapons/m4a1/FIRE_M4A1.png', self.x, self.y, self.width, self.height, 10, 0, self.scale, 15)
+            "idle": Animate('./assets/weapons/Glock/Fire Glock.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/Glock/Fire Glock.png', self.x, self.y, self.width, self.height, 10, 0, self.scale, 15)
         }
         self.weapon_state = "idle"
         self.flipped = False
@@ -221,19 +221,20 @@ class Submachine:
     def __init__(self, x, y, scale, player_speed):
         self.x = x
         self.y = y
-        self.width = 100
-        self.height = 50
+        self.width = 80
+        self.height = 48
         self.scale = scale
         self.mouse_x, self.mouse_y = 0, 0
         
-        self.bullet_speed = 60
-        self.bullet_damage = 12
+        self.bullet_speed = 60  # Faster than AK-47
+        self.bullet_damage = 7   # Lower damage than AK-47
         self.last_update = pygame.time.get_ticks()
+        self.fire_rate = 100  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
 
         self.animations = {
-            "idle": Animate('./assets/weapons/desert_rifle/idle.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
-            "shoot": Animate('./assets/weapons/desert_rifle/shoot.png', self.x, self.y, self.width, self.height, 8, 0, self.scale, 15)
+            "idle": Animate('./assets/weapons/Submachine/Fire Submachine.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/Submachine/Fire Submachine.png', self.x, self.y, self.width, self.height, 10, 0, self.scale, 15)
         }
         self.weapon_state = "idle"
         self.flipped = False
@@ -245,9 +246,9 @@ class Submachine:
         angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)
         
         self.flipped = rel_x < 0
-        
         if self.flipped:
-            angle = -angle + 180  
+            angle = -angle + 180
+        
         return angle
     
     def handleFire(self, pos_x, pos_y, angle):
@@ -263,7 +264,7 @@ class Submachine:
             muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
             muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
 
-            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 60, 6))
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 30, 7, "orange"))
 
     def renderBullets(self, screen, keys):
         for bullet in bullets:

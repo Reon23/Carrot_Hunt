@@ -395,4 +395,4 @@ class Morph2(pygame.sprite.Sprite):
             enemy_list.remove_internal(self)
 
     def render(self, screen):
-        self.animations[self.mode].animate_old(screen, self.render_x - 100 if self.flipped else self.render_x, self.render_y, self.flipped)
+        self.animations[self.mode].animate_old(screen, self.render_x - 120 if self.flipped else self.render_x, self.render_y, self.flipped)
