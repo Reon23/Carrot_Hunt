@@ -289,7 +289,7 @@ class DesertRifle:
         self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
 
     class Shotgun:
-    def __init__(self, x, y, scale, player_speed):
+     def __init__(self, x, y, scale, player_speed):
         self.x = x
         self.y = y
         self.width = 96
