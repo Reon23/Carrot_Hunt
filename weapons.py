@@ -215,6 +215,7 @@ class M4A1:
         
         self.renderBullets(screen, keys)
         self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
+
 class DesertRifle:
 
     def __init__(self, x, y, scale, player_speed):
