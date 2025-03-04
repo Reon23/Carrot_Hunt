@@ -230,6 +230,8 @@ class Morph1(pygame.sprite.Sprite):
             self.animations[self.mode].animate_old(screen, self.render_x - 200, self.render_y, self.flipped)
         else:
             self.animations[self.mode].animate_old(screen, self.render_x, self.render_y, self.flipped)
+
+
 class Morph2(pygame.sprite.Sprite):
     
     def __init__(self, x, y, width, height, scale):
@@ -257,12 +259,12 @@ class Morph2(pygame.sprite.Sprite):
         self.hit_cooldown = 2500
 
         self.animations = {
-            "idle": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
-            "follow": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
-            "hit": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
-            "death": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
-            "atk1": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
-            "atk2": Animate('./assets/enemy/Morph2/Morph.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 120)
+            "idle": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
+            "follow": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
+            "hit": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 2, 2, self.scale, 200),
+            "death": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 7, 6, self.scale, 50),
+            "atk1": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 8, 4, self.scale, 50),
+            "atk2": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 6, 5, self.scale, 120)
         }
         self.mode = "idle"
         self.flipped = False
@@ -282,26 +284,47 @@ class Morph2(pygame.sprite.Sprite):
             self.handleAttack(player, screen)
 
     def moveToPlayer(self, player_x, player_y, display_scroll):
+        # Calculate direction vector to the player
         target_x = player_x + display_scroll[0]
         enemy_center_x = self.x + (self.width // 2)
         
         dx = target_x - enemy_center_x
         dy = (player_y + display_scroll[1]) - (self.y + self.height)
 
-        self.flipped = dx < 0
+        # Determine flipping based on movement direction
+        if dx < 0:
+            self.flipped = True
+        else:
+            self.flipped = False
+
+        # Calculate distance to player
         distance = math.sqrt(dx**2 + dy**2)
 
-        min_separation_distance = 120
-        enemy_positions = [(other.x, other.y) for other in enemy_list if other != self]
-        separation_x, separation_y = compute_separation(self.x, self.y, self.speed, np.array(enemy_positions, dtype=np.float64), min_separation_distance) if enemy_positions else (0.0, 0.0)
+        # Separation logic to prevent enemies from overlapping
+        min_separation_distance = 150  # Adjust based on enemy size
+        enemy_positions = []
+        for other in enemy_list:
+            if other != self:
+                enemy_positions.append((other.x, other.y))
+        if enemy_positions:
+            enemy_positions = np.array(enemy_positions, dtype=np.float64)
+            separation_x, separation_y = compute_separation(self.x, self.y, self.speed, enemy_positions, min_separation_distance)
+        else:
+            separation_x, separation_y = 0.0, 0.0
 
+        # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
+            # Normalize movement vector and add separation force
             self.x += (dx / distance) * self.speed + separation_x
             self.y += (dy / distance) * self.speed + separation_y
             self.mode = "hit" if self.hurt else "follow"
         else:
-            self.mode = "hit" if self.hurt else "idle"
-            self.attack = not self.hurt
+            if self.hurt:
+                self.mode = "hit"
+            else:
+                if not self.attack:
+                    self.mode = "idle"
+            self.attack = True if not self.hurt else False
 
     def handleAttack(self, player, screen):
         current_time = pygame.time.get_ticks()
@@ -372,4 +395,4 @@ class Morph2(pygame.sprite.Sprite):
             enemy_list.remove_internal(self)
 
     def render(self, screen):
-        self.animations[self.mode].animate_old(screen, self.render_x - 180 if self.flipped else self.render_x, self.render_y, self.flipped)
+        self.animations[self.mode].animate_old(screen, self.render_x - 100 if self.flipped else self.render_x, self.render_y, self.flipped)

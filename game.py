@@ -8,7 +8,7 @@ SCREEN_HEIGHT = 720
 CULLING_MARGIN = 100 
 
 from player import Player
-from enemy import enemy_list, Morph1
+from enemy import enemy_list, Morph1, Morph2
 from weapons import bullets
 
 
@@ -31,14 +31,14 @@ class Engine:
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
 
-        for _ in range(30):
+        for _ in range(1):
             self.spawnEnemy()
 
     def spawnEnemy(self):
-        enemy_list.add_internal(Morph1(
+        enemy_list.add_internal(Morph2(
             random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), 
             random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 
-            128, 64, 3
+            128, 128, 3
         ))
 
     def render_fps(self):
