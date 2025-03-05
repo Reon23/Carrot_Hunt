@@ -227,7 +227,7 @@ class Submachine:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 60  # Faster than AK-47
-        self.bullet_damage = 7   # Lower damage than AK-47
+        self.bullet_damage = 10   # Lower damage than AK-47
         self.last_update = pygame.time.get_ticks()
         self.fire_rate = 100  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
@@ -264,7 +264,7 @@ class Submachine:
             muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
             muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
 
-            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 30, 7, "orange"))
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 40, 5, "orange"))
 
     def renderBullets(self, screen, keys):
         for bullet in bullets:

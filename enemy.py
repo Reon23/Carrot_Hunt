@@ -329,7 +329,7 @@ class Morph2(pygame.sprite.Sprite):
     def handleAttack(self, player, screen):
         current_time = pygame.time.get_ticks()
         options = ["atk1", "atk2"]
-        probabilities = [0.6, 0.4]  # Higher chance for atk2
+        probabilities = [0.7, 0.3]  # Higher chance for atk2
 
         if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
             self.attack = False
@@ -354,20 +354,37 @@ class Morph2(pygame.sprite.Sprite):
     def attackHit(self, type, player, screen):
         player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
         if self.attack:
-            offset = 60 if type == "atk1" else 90
-            range_width = 50 if type == "atk1" else 120
-            range_height = 40 if type == "atk1" else 60
             
-            enemy_rect = pygame.Rect(
-                (self.render_x + self.width//2 + offset) if not self.flipped else (self.render_x - self.width//2 - offset), 
-                self.render_y + self.height, 
-                self.width + range_width, 
-                self.height + range_height
-            )
+            if type == "atk1":
+                if not self.flipped:
+                    enemy_rect = pygame.Rect(self.render_x + self.width//2 + 50, 
+                            self.render_y + self.height + 30, 
+                            self.width + 40, 
+                            self.height
+                            )
+                else:
+                    enemy_rect = pygame.Rect(self.render_x - self.width//2 - 50, 
+                            self.render_y + self.height + 30, 
+                            self.width + 40, 
+                            self.height
+                            )
+                # pygame.draw.rect(screen, "red", enemy_rect)
+                if enemy_rect.colliderect(player_rect):
+                    if not self.attack_hit:
+                        player.hurt(10)
+                        self.attack_hit = True
             
-            if enemy_rect.colliderect(player_rect) and not self.attack_hit:
-                player.hurt(15 if type == "atk1" else 20)
-                self.attack_hit = True
+            elif type == "atk2":
+                enemy_rect = pygame.Rect(self.render_x, 
+                        self.render_y + self.height, 
+                        self.width + 100, 
+                        self.height + 50
+                        )
+                # pygame.draw.rect(screen, "red", enemy_rect)
+                if enemy_rect.colliderect(player_rect):
+                    if not self.attack_hit:
+                        player.hurt(10)
+                        self.attack_hit = True
 
     def handleCollision(self, bullet_group):
         if self.hurt:
