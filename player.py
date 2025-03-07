@@ -23,8 +23,8 @@ class Player:
         self.current_animation = self.animations[self.direction]
         self.play_animation = False
 
-        # self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
-        self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
+        self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
         # self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):

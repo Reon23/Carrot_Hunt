@@ -8,8 +8,9 @@ SCREEN_HEIGHT = 720
 CULLING_MARGIN = 100 
 
 from player import Player
-from enemy import enemy_list, Morph1, Morph2
+from enemy import enemy_list
 from weapons import bullets
+from spawner import Spawner
 
 
 # pygame setup
@@ -30,16 +31,8 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
+        self.enemy_spawner = Spawner()
 
-        for _ in range(50):
-            self.spawnEnemy()
-
-    def spawnEnemy(self):
-        enemy_list.add_internal(Morph2(
-            random.randrange(-SCREEN_WIDTH, SCREEN_WIDTH), 
-            random.randrange(-SCREEN_HEIGHT, SCREEN_HEIGHT), 
-            128, 128, 3
-        ))
 
     def render_fps(self):
         """Displays the FPS counter on the screen."""
@@ -75,6 +68,8 @@ class Engine:
                 SCREEN_WIDTH + (CULLING_MARGIN * 2), 
                 SCREEN_HEIGHT + (CULLING_MARGIN * 2)
             )
+            
+            self.enemy_spawner.handle_spawn(self.display_scroll)
 
             for enemy in enemy_list:
                 enemy.updatePosition(self.display_scroll, self.player, screen)

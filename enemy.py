@@ -9,24 +9,32 @@ enemy_list = pygame.sprite.Group()
 
 # This function computes the separation force for enemy avoidance.
 @njit
-def compute_separation(x, y, speed, enemy_positions, min_separation_distance, smoothing=0.2):
-    separation_x = 0.0
-    separation_y = 0.0
+def compute_separation(x, y, speed, enemy_positions, desired_separation, smoothing=0.2):
+    steer_x = 0.0
+    steer_y = 0.0
+    count = 0
     for i in range(enemy_positions.shape[0]):
         ex = enemy_positions[i, 0]
         ey = enemy_positions[i, 1]
         diff_x = x - ex
         diff_y = y - ey
-        enemy_distance = math.sqrt(diff_x * diff_x + diff_y * diff_y)
-        if enemy_distance < min_separation_distance and enemy_distance > 0:
-            separation_x += diff_x / enemy_distance
-            separation_y += diff_y / enemy_distance
+        distance = math.sqrt(diff_x * diff_x + diff_y * diff_y)
+        if distance < desired_separation and distance > 0:
+            # Weight by inverse of distance (closer enemies contribute more)
+            steer_x += diff_x / distance
+            steer_y += diff_y / distance
+            count += 1
+    if count > 0:
+        # Average the steering force from all neighbors
+        steer_x /= count
+        steer_y /= count
+        steer_magnitude = math.sqrt(steer_x * steer_x + steer_y * steer_y)
+        if steer_magnitude > 0:
+            # Normalize and scale the force
+            steer_x = (steer_x / steer_magnitude) * speed * smoothing
+            steer_y = (steer_y / steer_magnitude) * speed * smoothing
+    return steer_x, steer_y
 
-    separation_magnitude = math.sqrt(separation_x * separation_x + separation_y * separation_y)
-    if separation_magnitude > 0:
-        separation_x = (separation_x / separation_magnitude) * speed * smoothing
-        separation_y = (separation_y / separation_magnitude) * speed * smoothing
-    return separation_x, separation_y
 
 
 class Morph1(pygame.sprite.Sprite):
@@ -37,7 +45,7 @@ class Morph1(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.scale = scale
-        self.speed = 4
+        self.speed = 6
 
         self.render_x = x
         self.render_y = y
@@ -240,7 +248,7 @@ class Morph2(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.scale = scale
-        self.speed = 3  # Slightly slower than Morph1
+        self.speed = 5  # Slightly slower than Morph1
 
         self.render_x = x
         self.render_y = y
