@@ -1,11 +1,12 @@
 import pygame
-import random
 
 # Constants
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
+# SCREEN_WIDTH = 1920
+# SCREEN_HEIGHT = 1080
 # Culling margin (prevents pop-in)
-CULLING_MARGIN = 100 
+CULLING_MARGIN = 500 
 
 from player import Player
 from enemy import enemy_list
@@ -26,19 +27,27 @@ font = pygame.font.Font(None, 30)  # Default pygame font
 class Engine:
 
     # Initialize variables
+
     def __init__(self):
         self.running = True
         self.display_scroll = [0, 0]
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.enemy_spawner = Spawner()
+        self.fullscreen = False
 
+    def toggle_fullscreen(self):
+        """Toggles fullscreen mode when F11 is pressed."""
+        self.fullscreen = not self.fullscreen
+        if self.fullscreen:
+            pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+        else:
+            pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     def render_fps(self):
         """Displays the FPS counter on the screen."""
         fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, (255, 255, 255))
         screen.blit(fps_text, (10, 10))  # Draw FPS in the top-left corner
-
 
     def run(self):
         while self.running:
@@ -46,6 +55,9 @@ class Engine:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_F11:
+                        self.toggle_fullscreen()
 
             # Handle keyboard events
             keys = pygame.key.get_pressed()
@@ -68,6 +80,7 @@ class Engine:
                 SCREEN_WIDTH + (CULLING_MARGIN * 2), 
                 SCREEN_HEIGHT + (CULLING_MARGIN * 2)
             )
+
             
             self.enemy_spawner.handle_spawn(self.display_scroll)
 

@@ -162,7 +162,7 @@ class GlockP80:
         self.bullet_speed = 60  # Faster than AK-47
         self.bullet_damage = 5   # Lower damage than AK-47
         self.last_update = pygame.time.get_ticks()
-        self.fire_rate = 150  # Faster fire rate (100ms cooldown)
+        self.fire_rate = 250  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
 
         self.animations = {
