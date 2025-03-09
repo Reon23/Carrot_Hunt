@@ -11,7 +11,7 @@ CULLING_MARGIN = 500
 from player import Player
 from enemy import enemy_list
 from weapons import bullets
-from spawner import Spawner
+from spawner import EnemySpawner
 
 
 # pygame setup
@@ -33,7 +33,7 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
-        self.enemy_spawner = Spawner()
+        self.enemy_spawner = EnemySpawner()
         self.fullscreen = False
 
     def toggle_fullscreen(self):
@@ -85,15 +85,27 @@ class Engine:
             self.enemy_spawner.handle_spawn(self.display_scroll)
 
             for enemy in enemy_list:
-                enemy.updatePosition(self.display_scroll, self.player, screen)
-                enemy.handleCollision(bullets)
+                if enemy.y + (enemy.height + 30) - self.display_scroll[1] < self.player.y:
+                    enemy.updatePosition(self.display_scroll, self.player, screen)
+                    enemy.handleCollision(bullets)
 
-                # **Only render enemies near or inside the screen view**
-                enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
-                if screen_rect.colliderect(enemy_rect):
-                    enemy.render(screen)
+                    # **Only render enemies near or inside the screen view**
+                    enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
+                    if screen_rect.colliderect(enemy_rect):
+                        enemy.render(screen)
+
 
             self.player.render(screen, keys)
+
+            for enemy in enemy_list:
+                if not enemy.y + (enemy.height + 30) - self.display_scroll[1] < self.player.y:
+                    enemy.updatePosition(self.display_scroll, self.player, screen)
+                    enemy.handleCollision(bullets)
+
+                    # **Only render enemies near or inside the screen view**
+                    enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
+                    if screen_rect.colliderect(enemy_rect):
+                        enemy.render(screen)
 
             # Render FPS counter
             self.render_fps()

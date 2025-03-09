@@ -5,11 +5,11 @@ import random
 from enemy import enemy_list, Morph1, Morph2, Dummy
 from game import SCREEN_WIDTH, SCREEN_HEIGHT
 
-class Spawner:
+class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2']
         self.probabilities = [0.7, 0.3]
-        self.max_spawn = 10
+        self.max_spawn = 6
         self.spawn_count = 0
 
         self.spawn_cooldown = 1000
