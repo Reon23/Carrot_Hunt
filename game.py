@@ -1,10 +1,10 @@
 import pygame
 
 # Constants
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-# SCREEN_WIDTH = 1920
-# SCREEN_HEIGHT = 1080
+# SCREEN_WIDTH = 1280
+# SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 # Culling margin (prevents pop-in)
 CULLING_MARGIN = 500 
 
@@ -74,7 +74,7 @@ class Engine:
                 self.display_scroll[1] += self.player_speed
 
             # Render screen
-            screen.fill("green")
+            screen.fill((133, 51, 19))
 
             # **Optimize Enemy Rendering with Culling Offset**
             screen_rect = pygame.Rect(
@@ -93,7 +93,7 @@ class Engine:
 
             for enemy in enemy_list:
                 enemy.updatePosition(self.display_scroll, self.player, screen)
-                enemy.handleCollision(bullets)
+                enemy.handleCollision(bullets, self.player)
                 # **Only render enemies near or inside the screen view**
                 enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
                 if screen_rect.colliderect(enemy_rect):

@@ -10,10 +10,10 @@ class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2']
         self.probabilities = [0.2, 0.8]
-        self.max_spawn = 20
+        self.max_spawn = 50
         self.spawn_count = 0
 
-        self.spawn_cooldown = 2000
+        self.spawn_cooldown = 1000
         self.last_spawn = 0
 
         self.outside_cooldown = 1000  # Adjustable cooldown in milliseconds

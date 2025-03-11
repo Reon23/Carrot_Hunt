@@ -9,6 +9,7 @@ class Carrot(pygame.sprite.Sprite):
         self.y = y
         self.render_x = self.x
         self.render_y = self.y
+        self.points = 10
         self.width = 32
         self.height = 32
         self.offset = 30
@@ -23,6 +24,7 @@ class Carrot(pygame.sprite.Sprite):
         player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
 
         if self.hitbox.colliderect(player_rect):
+            player.player_score.addScore(self.points)
             self.kill()
     
     def updatePosition(self, displayScroll):

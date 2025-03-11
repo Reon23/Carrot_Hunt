@@ -44,6 +44,7 @@ class Morph1(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 50
+        self.points = 40
         self.weakened_health = 10
         self.hurt = False
         self.attack = False
@@ -197,7 +198,7 @@ class Morph1(pygame.sprite.Sprite):
                         self.attack_hit = True
 
 
-    def handleCollision(self, bullet_group):
+    def handleCollision(self, bullet_group, player):
         # start timer when hurt
         if self.hurt:
             current = pygame.time.get_ticks()
@@ -223,6 +224,7 @@ class Morph1(pygame.sprite.Sprite):
 
         if self.health <= 0:
             self.mode = "death"
+            player.player_score.addScore(self.points)
             enemy_list.remove_internal(self)  # Remove enemy when health reaches zero
 
     def render(self, screen):
@@ -247,6 +249,7 @@ class Morph2(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 70  # More health than Morph1
+        self.points = 70
         self.weakened_health = 20
         self.hurt = False
         self.attack = False
@@ -387,7 +390,7 @@ class Morph2(pygame.sprite.Sprite):
                         player.hurt(10)
                         self.attack_hit = True
 
-    def handleCollision(self, bullet_group):
+    def handleCollision(self, bullet_group, player):
         if self.hurt:
             current = pygame.time.get_ticks()
         else:
@@ -410,6 +413,7 @@ class Morph2(pygame.sprite.Sprite):
 
         if self.health <= 0:
             self.mode = "death"
+            player.player_score.addScore(self.points)
             enemy_list.remove_internal(self)
 
     def render(self, screen):
@@ -444,7 +448,7 @@ class Dummy(pygame.sprite.Sprite):
     def attackHit(self, type, player, screen):
         pass
 
-    def handleCollision(self, bullet_group):
+    def handleCollision(self, bullet_group, player = None):
         pass
 
     def render(self, screen):

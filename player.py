@@ -2,7 +2,7 @@ import pygame
 import math
 from animator import Animate
 from weapons import Ak47, GlockP80, Submachine
-from hud import healthBar
+from hud import healthBar, ScoreBar
 
 class Player(pygame.sprite.Sprite):
     
@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.height = height
         self.player_speed = player_speed
         self.player_health = healthBar(100)
+        self.player_score = ScoreBar()
         self.animations = {
             "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2, 50),
             "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
@@ -63,3 +64,4 @@ class Player(pygame.sprite.Sprite):
         self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
         self.player_weapon.render(screen, self.x, self.y, keys)
         self.player_health.render(screen)
+        self.player_score.render(screen)
