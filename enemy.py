@@ -432,7 +432,7 @@ class Dummy(pygame.sprite.Sprite):
         self.weakened_health = 10
         self.hurt = False
 
-    def updatePosition(self, display_scroll, player, screen):
+    def updatePosition(self, display_scroll, player = None, screen = None):
         pass
 
     def moveToPlayer(self, player_x, player_y, display_scroll):

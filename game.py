@@ -11,7 +11,8 @@ CULLING_MARGIN = 500
 from player import Player
 from enemy import enemy_list
 from weapons import bullets
-from spawner import EnemySpawner
+from spawner import EnemySpawner, CollectableSpawner
+from collectables import collectable_list
 
 
 # pygame setup
@@ -34,6 +35,7 @@ class Engine:
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.enemy_spawner = EnemySpawner()
+        self.collectable_spawner = CollectableSpawner()
         self.fullscreen = False
         self.entities = []
 
@@ -84,6 +86,7 @@ class Engine:
 
             
             self.enemy_spawner.handle_spawn(self.display_scroll)
+            self.collectable_spawner.handle_spawn(self.display_scroll)
 
             # Clear entities list to prevent duplicates
             self.entities.clear()
@@ -95,10 +98,16 @@ class Engine:
                 enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
                 if screen_rect.colliderect(enemy_rect):
                     self.entities.append(enemy)
-                else:
-                    if enemy in self.entities:
-                        self.entities.remove(enemy)
 
+            for item in collectable_list:
+                item.updatePosition(self.display_scroll)
+                item.handleCollision(self.player)
+
+                # Render items within screen
+                item_rect = pygame.Rect(item.x, item.y, item.width, item.height)
+                if screen_rect.colliderect(item_rect):
+                    item.render(screen)
+            
             self.entities.append(self.player)
 
 

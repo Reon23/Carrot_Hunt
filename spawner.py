@@ -103,9 +103,8 @@ class CollectableSpawner:
         self.last_spawn = 0
 
         self.outside_cooldown = 5000  # Adjustable cooldown in milliseconds
-        
-        collectable_list.add(Dummy())
-        collectable_list.add(Dummy())
+        collectable_list.add_internal(Dummy())
+        collectable_list.add_internal(Dummy())
 
     def get_spawn_position(self, displayScroll):
         """Returns a random position outside the screen boundaries, adjusted for scrolling."""
@@ -124,9 +123,7 @@ class CollectableSpawner:
     def spawn_item(self, displayScroll):
         if self.spawn_count < self.max_spawn:
             x, y = self.get_spawn_position(displayScroll)
-            collectable_list.add_internal(Carrot(x, y, 0.5))
-            self.spawn_count += 1
-            # print("Ememy ",self.spawn_count, " Type : ", spawning_enemy)
+            collectable_list.add_internal(Carrot(x, y, 2))
 
     def handle_outside(self, displayScroll):
         scroll_x, scroll_y = displayScroll
@@ -139,14 +136,12 @@ class CollectableSpawner:
                     item.outside_horizontal_since = current_time
                 elif current_time - item.outside_horizontal_since >= self.outside_cooldown:
                     collectable_list.remove_internal(item)
-                    self.spawn_count -= 1
                     item.outside_horizontal_since = None
             elif item.x > scroll_x + SCREEN_WIDTH:
                 if not hasattr(item, 'outside_horizontal_since') or item.outside_horizontal_since is None:
                     item.outside_horizontal_since = current_time
                 elif current_time - item.outside_horizontal_since >= self.outside_cooldown:
                     collectable_list.remove_internal(item)
-                    self.spawn_count -= 1
                     item.outside_horizontal_since = None
             else:
                 item.outside_horizontal_since = None  # Reset if enemy is visible
@@ -157,19 +152,18 @@ class CollectableSpawner:
                     item.outside_vertical_since = current_time
                 elif current_time - item.outside_vertical_since >= self.outside_cooldown:
                     collectable_list.remove_internal(item)
-                    self.spawn_count -= 1
                     item.outside_vertical_since = None
             elif item.y > scroll_y + SCREEN_HEIGHT:
                 if not hasattr(item, 'outside_vertical_since') or item.outside_vertical_since is None:
                     item.outside_vertical_since = current_time
                 elif current_time - item.outside_vertical_since >= self.outside_cooldown:
                     collectable_list.remove_internal(item)
-                    self.spawn_count -= 1
                     item.outside_vertical_since = None
             else:
                 item.outside_vertical_since = None  # Reset if enemy is visible
 
     def handle_spawn(self, displayScroll):
+        self.spawn_count = len(collectable_list)
         current_time = pygame.time.get_ticks()
         self.handle_outside(displayScroll)
         if current_time - self.last_spawn >= self.spawn_cooldown:
