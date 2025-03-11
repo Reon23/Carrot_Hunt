@@ -4,7 +4,7 @@ from animator import Animate
 from weapons import Ak47, GlockP80, Submachine
 from hud import healthBar
 
-class Player:
+class Player(pygame.sprite.Sprite):
     
     #Initalize player variables
     def __init__(self, x, y, width, height, player_speed):
@@ -24,8 +24,8 @@ class Player:
         self.play_animation = False
 
         # self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
-        self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
-        # self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
+        self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):
         self.player_health.updateHealth(max(0, self.player_health.health - damage))

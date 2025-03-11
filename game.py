@@ -35,6 +35,7 @@ class Engine:
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.enemy_spawner = EnemySpawner()
         self.fullscreen = False
+        self.entities = []
 
     def toggle_fullscreen(self):
         """Toggles fullscreen mode when F11 is pressed."""
@@ -84,28 +85,37 @@ class Engine:
             
             self.enemy_spawner.handle_spawn(self.display_scroll)
 
-            for enemy in enemy_list:
-                if enemy.y + (enemy.height + 30) - self.display_scroll[1] < self.player.y:
-                    enemy.updatePosition(self.display_scroll, self.player, screen)
-                    enemy.handleCollision(bullets)
-
-                    # **Only render enemies near or inside the screen view**
-                    enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
-                    if screen_rect.colliderect(enemy_rect):
-                        enemy.render(screen)
-
-
-            self.player.render(screen, keys)
+            # Clear entities list to prevent duplicates
+            self.entities.clear()
 
             for enemy in enemy_list:
-                if not enemy.y + (enemy.height + 30) - self.display_scroll[1] < self.player.y:
-                    enemy.updatePosition(self.display_scroll, self.player, screen)
-                    enemy.handleCollision(bullets)
+                enemy.updatePosition(self.display_scroll, self.player, screen)
+                enemy.handleCollision(bullets)
+                # **Only render enemies near or inside the screen view**
+                enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
+                if screen_rect.colliderect(enemy_rect):
+                    self.entities.append(enemy)
+                else:
+                    if enemy in self.entities:
+                        self.entities.remove(enemy)
 
-                    # **Only render enemies near or inside the screen view**
-                    enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
-                    if screen_rect.colliderect(enemy_rect):
-                        enemy.render(screen)
+            self.entities.append(self.player)
+
+
+            # print([(sprite.y - self.display_scroll[1] + 100 + getattr(sprite, 'height', 64)) if sprite != self.player else (sprite.y + getattr(sprite, 'height', 32)) for sprite in self.entities])
+            # **Sort by the bottom Y position to fix rendering order**
+            self.entities.sort(key=lambda entity: (entity.y - self.display_scroll[1] + 100 + getattr(entity, 'height', 64))
+                                if entity != self.player else (entity.y + getattr(entity, 'height', 64)))
+
+            for entity in self.entities:
+                if entity == self.player:
+                    entity.render(screen, keys)
+                else:
+                    entity.render(screen)
+
+
+            # self.player.render(screen, keys)
+
 
             # Render FPS counter
             self.render_fps()
