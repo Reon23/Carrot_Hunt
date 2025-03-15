@@ -1,10 +1,10 @@
 import pygame
 import math
 from animator import Animate
-from weapons import ak47
-from hud import healthBar
+from weapons import Ak47, GlockP80, Submachine
+from hud import healthBar, ScoreBar
 
-class Player:
+class Player(pygame.sprite.Sprite):
     
     #Initalize player variables
     def __init__(self, x, y, width, height, player_speed):
@@ -14,6 +14,7 @@ class Player:
         self.height = height
         self.player_speed = player_speed
         self.player_health = healthBar(100)
+        self.player_score = ScoreBar()
         self.animations = {
             "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2, 50),
             "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
@@ -23,7 +24,9 @@ class Player:
         self.current_animation = self.animations[self.direction]
         self.play_animation = False
 
-        self.player_weapon = ak47(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
+        self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):
         self.player_health.updateHealth(max(0, self.player_health.health - damage))
@@ -61,3 +64,4 @@ class Player:
         self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
         self.player_weapon.render(screen, self.x, self.y, keys)
         self.player_health.render(screen)
+        self.player_score.render(screen)

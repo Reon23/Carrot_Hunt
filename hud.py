@@ -15,4 +15,24 @@ class healthBar:
 
     def render(self, screen):
         current_width = max(0, (self.width * (self.health / self.max_health)))  # Smooth scaling
-        pygame.draw.rect(screen, self.color, (30, 30, current_width, self.height))
+        pygame.draw.rect(screen, self.color, (50, 30, current_width, self.height))
+
+class ScoreBar:
+    def __init__(self):
+        self.score = 0
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 30)
+
+    def addScore(self, value):
+        self.score += value
+
+    def render(self, screen):
+        score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        screen.blit(score_text, (SCREEN_WIDTH//1.1 - (len(str(self.score)) * 10), 20))
+
+class CrossHair:
+    def __init__(self):
+        self.sprite = pygame.image.load('./assets/ui/crosshair/crosshair.png')
+
+    def render(self, screen, mouse_x, mouse_y):
+        screen.blit(self.sprite, (mouse_x - 16, mouse_y - 16))
