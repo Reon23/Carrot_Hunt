@@ -9,6 +9,7 @@ SCREEN_HEIGHT = 1080
 CULLING_MARGIN = 500 
 
 from player import Player
+from hud import CrossHair
 from enemy import enemy_list
 from weapons import bullets
 from spawner import EnemySpawner, CollectableSpawner
@@ -34,10 +35,13 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_speed = 8
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
+        self.player_crosshair = CrossHair()
         self.enemy_spawner = EnemySpawner()
         self.collectable_spawner = CollectableSpawner()
         self.fullscreen = False
         self.entities = []
+        # Hides the mouse
+        pygame.mouse.set_visible(False)
 
     def toggle_fullscreen(self):
         """Toggles fullscreen mode when F11 is pressed."""
@@ -128,6 +132,7 @@ class Engine:
 
             # Render FPS counter
             self.render_fps()
+            self.player_crosshair.render(screen, mouse_x, mouse_y)
 
             pygame.display.flip()
             clock.tick(60)
