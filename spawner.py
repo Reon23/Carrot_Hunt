@@ -9,8 +9,8 @@ from game import SCREEN_WIDTH, SCREEN_HEIGHT
 class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2']
-        self.probabilities = [0.2, 0.8]
-        self.max_spawn = 50
+        self.probabilities = [0.7, 0.3]
+        self.max_spawn = 100
         self.spawn_count = 0
 
         self.spawn_cooldown = 1000

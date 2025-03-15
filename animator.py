@@ -2,7 +2,7 @@ import pygame
 
 class Animate:
     sprite_cache = {}  # Dictionary to store loaded sprite sheets
-    
+
     def __init__(self, sprite_sheet_path, x, y, width, height, frames, frame_row, scale, speed):
         if sprite_sheet_path not in Animate.sprite_cache:
             Animate.sprite_cache[sprite_sheet_path] = pygame.image.load(str(sprite_sheet_path)).convert_alpha()
@@ -15,38 +15,40 @@ class Animate:
         self.scale = scale
         self.frames = frames
         self.frame = 0
-        self.animation_list = []
+        self.animation_list = []           # Original frames
+        self.flipped_animation_list = []   # Precomputed flipped frames
         self.last_update = pygame.time.get_ticks()
         self.animation_cooldown = speed
 
         for i in range(self.frames):
-            self.animation_list.append(self.getFrame(self.sprite_sheet, i, frame_row, self.width, self.height, self.scale))
+            # Get the original frame
+            frame = self.getFrame(self.sprite_sheet, i, frame_row, self.width, self.height, self.scale)
+            self.animation_list.append(frame)
+            # Precompute and cache the flipped frame
+            self.flipped_animation_list.append(pygame.transform.flip(frame, True, False))
 
-    # Fetch single frame from sprite sheet
+    # Fetch a single frame from the sprite sheet
     def getFrame(self, sprite_sheet, xframe_no, yframe_no, width, height, scale):
         frame = sprite_sheet.subsurface(pygame.Rect(
             xframe_no * width, yframe_no * height, width, height
-        ))  # Directly crop the frame
+        ))
         return pygame.transform.scale(frame, (width * scale, height * scale))
 
-    def animate_old(self, screen, render_x, render_y, flipped = False):
+    def animate_old(self, screen, render_x, render_y, flipped=False):
         current_time = pygame.time.get_ticks()
 
         if current_time - self.last_update >= self.animation_cooldown:
             self.last_update = current_time  # Reset last update time
-            self.frame += 1  # Move to next frame
-            
-            if self.frame >= self.frames:  # Loop back to first frame
-                self.frame = 0
+            self.frame = (self.frame + 1) % self.frames  # Cycle frames
 
-        image = self.animation_list[self.frame]
+        # Use precomputed images based on the flipped flag
         if flipped:
-            image = pygame.transform.flip(image, True, False)
-            image_width = image.get_width()
-            screen.blit(image, (render_x, render_y))
+            image = self.flipped_animation_list[self.frame]
         else:
-            self.image_flipped = False
-            screen.blit(image, (render_x, render_y))
+            image = self.animation_list[self.frame]
+        
+        screen.blit(image, (render_x, render_y))
+
 
     def animate(self, screen, play, render_x, render_y, angle, flipped):
         current_time = pygame.time.get_ticks()

@@ -71,6 +71,10 @@ class Morph1(pygame.sprite.Sprite):
         # Distance at which enemy stops moving toward the player
         self.stop_radius = 80  # Enemy stops moving within this radius from the player
 
+        self.separation_update_interval = 60  # Update every specified frames
+        self.frame_counter = 0
+        self.cached_separation = (0.0, 0.0)
+
     def updatePosition(self, display_scroll, player, screen):
         player_x = player.x - (player.width * 2)
         player_y = player.y - (player.height * 2)
@@ -101,16 +105,23 @@ class Morph1(pygame.sprite.Sprite):
         distance = math.sqrt(dx**2 + dy**2)
 
         # Separation logic to prevent enemies from overlapping
-        min_separation_distance = 150  # Adjust based on enemy size
-        enemy_positions = []
-        for other in enemy_list:
-            if other != self:
-                enemy_positions.append((other.x, other.y))
-        if enemy_positions:
-            enemy_positions = np.array(enemy_positions, dtype=np.float64)
-            separation_x, separation_y = compute_separation(self.x, self.y, self.speed, enemy_positions, min_separation_distance)
+        # Only update separation force every 'separation_update_interval' frames
+        self.frame_counter += 1
+        if self.frame_counter % self.separation_update_interval == 0:
+            enemy_positions = []
+            for other in enemy_list:
+                if other != self:
+                    enemy_positions.append((other.x, other.y))
+            if enemy_positions:
+                enemy_positions = np.array(enemy_positions, dtype=np.float64)
+                separation_x, separation_y = compute_separation(
+                    self.x, self.y, self.speed, enemy_positions, min_separation_distance=150
+                )
+                self.cached_separation = (separation_x, separation_y)
+            else:
+                self.cached_separation = (0.0, 0.0)
         else:
-            separation_x, separation_y = 0.0, 0.0
+            separation_x, separation_y = self.cached_separation
 
         # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
@@ -274,6 +285,10 @@ class Morph2(pygame.sprite.Sprite):
         self.flipped = False
     
         self.stop_radius = 100  # Morph2 stops a bit further away
+        
+        self.separation_update_interval = 60  # Update every specified frames
+        self.frame_counter = 0
+        self.cached_separation = (0.0, 0.0)
 
     def updatePosition(self, display_scroll, player, screen):
         player_x = player.x - (player.width * 2)
@@ -305,16 +320,23 @@ class Morph2(pygame.sprite.Sprite):
         distance = math.sqrt(dx**2 + dy**2)
 
         # Separation logic to prevent enemies from overlapping
-        min_separation_distance = 150  # Adjust based on enemy size
-        enemy_positions = []
-        for other in enemy_list:
-            if other != self:
-                enemy_positions.append((other.x, other.y))
-        if enemy_positions:
-            enemy_positions = np.array(enemy_positions, dtype=np.float64)
-            separation_x, separation_y = compute_separation(self.x, self.y, self.speed, enemy_positions, min_separation_distance)
+        # Only update separation force every 'separation_update_interval' frames
+        self.frame_counter += 1
+        if self.frame_counter % self.separation_update_interval == 0:
+            enemy_positions = []
+            for other in enemy_list:
+                if other != self:
+                    enemy_positions.append((other.x, other.y))
+            if enemy_positions:
+                enemy_positions = np.array(enemy_positions, dtype=np.float64)
+                separation_x, separation_y = compute_separation(
+                    self.x, self.y, self.speed, enemy_positions, min_separation_distance=150
+                )
+                self.cached_separation = (separation_x, separation_y)
+            else:
+                self.cached_separation = (0.0, 0.0)
         else:
-            separation_x, separation_y = 0.0, 0.0
+            separation_x, separation_y = self.cached_separation
 
         # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
