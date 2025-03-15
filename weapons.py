@@ -176,6 +176,8 @@ class GlockP80:
         self.weapon_state = "idle"
         self.flipped = False
 
+        self.weapon_sfx = SFXplayer('./assets/audio/gawk.ogg', 0.5)
+
     def rotateWeapon(self, player_x, player_y):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
         
@@ -198,6 +200,8 @@ class GlockP80:
             muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
             muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
             
+            self.weapon_sfx.stopSound()
+            self.weapon_sfx.playSound()
             bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 45, 5))
 
     def renderBullets(self, screen, keys):
