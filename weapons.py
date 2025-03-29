@@ -1,5 +1,6 @@
 import pygame
 import math
+from game import time
 from animator import Animate
 from audio import SFXplayer
 
@@ -68,16 +69,16 @@ class Ak47:
         
         if keys[pygame.K_a]:
             for bullet in bullets:
-                bullet.x += self.player_speed
+                bullet.x += self.player_speed * time['delta'] * 60
         if keys[pygame.K_d]:
             for bullet in bullets:
-                bullet.x -= self.player_speed
+                bullet.x -= self.player_speed * time['delta'] * 60
         if keys[pygame.K_w]:
             for bullet in bullets:
-                bullet.y += self.player_speed
+                bullet.y += self.player_speed * time['delta'] * 60
         if keys[pygame.K_s]:
             for bullet in bullets:
-                bullet.y -= self.player_speed
+                bullet.y -= self.player_speed * time['delta'] * 60
         
         for bullet in bullets:
             bullet.render(screen, self.flipped)
@@ -132,8 +133,8 @@ class Bullet:
     
     def render(self, screen, flipped):
         current_time = pygame.time.get_ticks()
-        self.x -= int(self.x_vel)
-        self.y -= int(self.y_vel)
+        self.x -= int(self.x_vel * time['delta'] * 60)
+        self.y -= int(self.y_vel * time['delta'] * 60)
         
         if current_time - self.last_update >= self.bullet_lifetime:
             self.last_update = current_time
@@ -280,10 +281,10 @@ class Submachine:
 
     def renderBullets(self, screen, keys):
         for bullet in bullets:
-            if keys[pygame.K_a]: bullet.x += self.player_speed
-            if keys[pygame.K_d]: bullet.x -= self.player_speed
-            if keys[pygame.K_w]: bullet.y += self.player_speed
-            if keys[pygame.K_s]: bullet.y -= self.player_speed
+            if keys[pygame.K_a]: bullet.x += self.player_speed * time['delta'] * 60
+            if keys[pygame.K_d]: bullet.x -= self.player_speed * time['delta'] * 60
+            if keys[pygame.K_w]: bullet.y += self.player_speed * time['delta'] * 60
+            if keys[pygame.K_s]: bullet.y -= self.player_speed * time['delta'] * 60
             bullet.render(screen, self.flipped)
     
     def render(self, screen, pos_x, pos_y, keys):

@@ -7,6 +7,8 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 # Culling margin (prevents pop-in)
 CULLING_MARGIN = 500 
+# Delta Time
+time = {'delta' : 1}
 
 from player import Player
 from hud import CrossHair
@@ -33,7 +35,7 @@ class Engine:
     def __init__(self):
         self.running = True
         self.display_scroll = [0, 0]
-        self.player_speed = 8
+        self.player_speed = 10
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
         self.player_crosshair = CrossHair()
         self.enemy_spawner = EnemySpawner()
@@ -69,13 +71,13 @@ class Engine:
             # Handle keyboard events
             keys = pygame.key.get_pressed()
             if keys[pygame.K_a]:
-                self.display_scroll[0] -= self.player_speed
+                self.display_scroll[0] -= self.player_speed * time['delta'] * 60
             if keys[pygame.K_d]:
-                self.display_scroll[0] += self.player_speed
+                self.display_scroll[0] += self.player_speed * time['delta'] * 60
             if keys[pygame.K_w]:
-                self.display_scroll[1] -= self.player_speed
+                self.display_scroll[1] -= self.player_speed * time['delta'] * 60
             if keys[pygame.K_s]:
-                self.display_scroll[1] += self.player_speed
+                self.display_scroll[1] += self.player_speed * time['delta'] * 60
 
             # Render screen
             screen.fill((133, 51, 19))
@@ -135,6 +137,9 @@ class Engine:
             self.player_crosshair.render(screen, mouse_x, mouse_y)
 
             pygame.display.flip()
-            clock.tick(60)
+            
+            # Calculate Delta Time & Set Frame Rate
+            time['delta'] = clock.tick(120) / 1000.0
 
         pygame.quit()
+

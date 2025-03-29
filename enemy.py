@@ -2,6 +2,7 @@ import pygame
 import math
 import random
 import numpy as np
+from game import time
 from animator import Animate
 from numba import njit
 
@@ -126,8 +127,8 @@ class Morph1(pygame.sprite.Sprite):
         # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
             # Normalize movement vector and add separation force
-            self.x += (dx / distance) * self.speed + separation_x
-            self.y += (dy / distance) * self.speed + separation_y
+            self.x += (dx / distance) * (self.speed * time['delta'] * 60) + separation_x
+            self.y += (dy / distance) * (self.speed * time['delta'] * 60) + separation_y
             self.mode = "hit" if self.hurt else "follow"
         else:
             if self.hurt:
@@ -341,8 +342,8 @@ class Morph2(pygame.sprite.Sprite):
         # Move only if outside stop radius
         if distance > self.stop_radius and not self.attack:
             # Normalize movement vector and add separation force
-            self.x += (dx / distance) * self.speed + separation_x
-            self.y += (dy / distance) * self.speed + separation_y
+            self.x += (dx / distance) * (self.speed * time['delta'] * 60) + separation_x
+            self.y += (dy / distance) * (self.speed * time['delta'] * 60) + separation_y
             self.mode = "hit" if self.hurt else "follow"
         else:
             if self.hurt:
