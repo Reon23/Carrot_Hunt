@@ -2,15 +2,15 @@ import pygame
 import numpy as np
 import random
 
-from enemy import enemy_list, Morph1, Morph2, Dummy
+from enemy import enemy_list, Morph1, Morph2, Mage, Dummy
 from collectables import collectable_list, Carrot
 from game import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class EnemySpawner:
     def __init__(self):
-        self.choice = ['morph1', 'morph2']
-        self.probabilities = [0.7, 0.3]
-        self.max_spawn = 100
+        self.choice = ['morph1', 'morph2', 'mage']
+        self.probabilities = [0, 0, 1]
+        self.max_spawn = 1
         self.spawn_count = 0
 
         self.spawn_cooldown = 2000
@@ -42,8 +42,10 @@ class EnemySpawner:
 
             if spawning_enemy == 'morph1':
                 enemy_list.add_internal(Morph1(x, y, 128, 64, 3))
-            else:
+            elif spawning_enemy == 'morph2':
                 enemy_list.add_internal(Morph2(x, y, 128, 128, 3))
+            else:
+                enemy_list.add_internal(Mage(x, y, 128, 64, 3))
 
             self.spawn_count += 1
             # print("Ememy ",self.spawn_count, " Type : ", spawning_enemy)
