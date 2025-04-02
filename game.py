@@ -12,7 +12,7 @@ time = {'delta' : 1}
 
 from player import Player
 from hud import CrossHair
-from enemy import enemy_list
+from enemy import enemy_list, enemy_bullets
 from weapons import bullets
 from spawner import EnemySpawner, CollectableSpawner
 from collectables import collectable_list
@@ -104,6 +104,13 @@ class Engine:
                 enemy_rect = pygame.Rect(enemy.x, enemy.y, enemy.width, enemy.height)
                 if screen_rect.colliderect(enemy_rect):
                     self.entities.append(enemy)
+
+            for bullet in enemy_bullets:
+                bullet.updatePosition(self.display_scroll, self.player)
+                bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
+                if screen_rect.colliderect(bullet_rect):
+                    bullet.render(screen)
+
 
             for item in collectable_list:
                 item.updatePosition(self.display_scroll)

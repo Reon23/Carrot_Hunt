@@ -7,6 +7,7 @@ from animator import Animate
 from numba import njit
 
 enemy_list = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
 
 # This function computes the separation force for enemy avoidance.
 @njit
@@ -468,13 +469,14 @@ class Mage(pygame.sprite.Sprite):
         self.last_attack_time = 0
         self.attack_cooldown = 400
         self.death_period = 0
+        self.spell_cast = False
 
         self.animations = {
             "idle": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 7, 0, self.scale, 50),
             "follow": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 6, 1, self.scale, 50),
             "hit": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 1, 4, self.scale, 200),
             "death": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 9, 5, self.scale, 50),
-            "atk1": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 9, 2, self.scale, 50),
+            "atk1": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 10, 3, self.scale, 50),
             "atk2": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 10, 3, self.scale, 120)
         }
         self.mode = "idle"
@@ -551,7 +553,7 @@ class Mage(pygame.sprite.Sprite):
     def handleAttack(self, player, screen):
         current_time = pygame.time.get_ticks()
         options = ["atk1", "atk2"]
-        probabilities = [0.7, 0.3] 
+        probabilities = [0, 1] 
 
         if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
             self.attack = False
@@ -572,10 +574,11 @@ class Mage(pygame.sprite.Sprite):
             self.last_post_attack_time = current_time
             self.attack = False
             self.attack_hit = False
+            self.spell_cast = False
 
     def attackHit(self, type, player, screen):
         player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
-        if self.attack:
+        if not self.spell_cast:
             
             if type == "atk1":
                 if not self.flipped:
@@ -597,16 +600,9 @@ class Mage(pygame.sprite.Sprite):
                         self.attack_hit = True
             
             elif type == "atk2":
-                enemy_rect = pygame.Rect(self.render_x, 
-                        self.render_y + self.height, 
-                        self.width + 100, 
-                        self.height + 50
-                        )
-                # pygame.draw.rect(screen, "red", enemy_rect)
-                if enemy_rect.colliderect(player_rect):
-                    if not self.attack_hit:
-                        player.hurt(10)
-                        self.attack_hit = True
+                if not self.spell_cast:
+                    enemy_bullets.add_internal(MageCast())
+                    self.spell_cast = True
 
     def handleCollision(self, bullet_group, player):
 
@@ -636,6 +632,52 @@ class Mage(pygame.sprite.Sprite):
 
     def render(self, screen):
         self.animations[self.mode].animate_old(screen, self.render_x - 200 if self.flipped else self.render_x, self.render_y, self.flipped)
+
+class MageCast(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.x = 0
+        self.y = 0
+        self.render_x = self.x
+        self.render_y = self.y
+        self.width = 128
+        self.height = 64
+        self.damage = {'large': 30, 'medium': 40, 'small': 50}
+        self.choice = ['large', 'medium', 'small']
+        self.probabilities = [0.35, 0.5, 0.15]
+        self.animations = {
+            'small': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 0, 3, 120),
+            'medium': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 1, 3, 120),
+            'large': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 2, 3,120)
+        }
+        self.cast_type = np.random.choice(self.choice, p=self.probabilities)
+        self.cast_set = False
+        self.lastupdate = pygame.time.get_ticks()
+
+    def placeCast(self, player, displayScroll):
+        if not self.cast_set:
+            self.x = player.x + displayScroll[0] - random.randrange(-120, 120) - self.width
+            self.y = player.y + displayScroll[1] - random.randrange(-120, 120) - self.height
+            self.cast_set = True
+        else:
+            return
+
+    def updatePosition(self, displayScroll, player):
+        self.placeCast(player, displayScroll)
+        self.render_x = self.x - displayScroll[0]
+        self.render_y = self.y - displayScroll[1]
+
+    def render(self, screen):
+        current = pygame.time.get_ticks()
+        animation = self.animations[self.cast_type]
+        animation_duration = animation.frames * animation.animation_cooldown
+
+        # Only remove the cast after the animation has fully played
+        if current - self.lastupdate >= animation_duration:
+            self.lastupdate = current
+            enemy_bullets.remove_internal(self)
+
+        animation.animate_old(screen, self.render_x, self.render_y)
 
 class Dummy(pygame.sprite.Sprite):
     def __init__(self):
