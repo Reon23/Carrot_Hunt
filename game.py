@@ -107,6 +107,7 @@ class Engine:
 
             for bullet in enemy_bullets:
                 bullet.updatePosition(self.display_scroll, self.player)
+                bullet.handleCollision(self.player, screen)
                 bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
                 if screen_rect.colliderect(bullet_rect):
                     bullet.render(screen)

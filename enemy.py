@@ -646,12 +646,14 @@ class MageCast(pygame.sprite.Sprite):
         self.choice = ['large', 'medium', 'small']
         self.probabilities = [0.35, 0.5, 0.15]
         self.animations = {
-            'small': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 0, 3, 120),
-            'medium': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 1, 3, 120),
+            'small': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 1, 3, 120),
+            'medium': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 0, 3, 120),
             'large': Animate('./assets/enemy/Mage/mage_atk2.png', self.x, self.y, self.width, self.height, 6, 2, 3,120)
         }
         self.cast_type = np.random.choice(self.choice, p=self.probabilities)
         self.cast_set = False
+        self.cast_can_hit = False
+        self.cast_hit = False
         self.lastupdate = pygame.time.get_ticks()
 
     def placeCast(self, player, displayScroll):
@@ -667,11 +669,28 @@ class MageCast(pygame.sprite.Sprite):
         self.render_x = self.x - displayScroll[0]
         self.render_y = self.y - displayScroll[1]
 
+    def handleCollision(self, player, screen):
+        player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
+        if self.cast_type == "small":
+            cast_rect = pygame.Rect(self.render_x + self.width * 1.25, self.render_y + self.height * 1.7, self.width//2, self.height//2)
+        elif self.cast_type == "medium":
+            cast_rect = pygame.Rect(self.render_x + self.width, self.render_y + self.height * 1.5, self.width, self.height//1.5)
+        else:
+            cast_rect = pygame.Rect(self.render_x + self.width - 10, self.render_y + self.height + 10, self.width * 1.4, self.height)
+
+        # pygame.draw.rect(screen, "red", cast_rect)
+
+        if cast_rect.colliderect(player_rect) and not self.cast_hit and self.cast_can_hit:
+            player.hurt(self.damage[self.cast_type])
+            self.cast_hit = True
+
     def render(self, screen):
         current = pygame.time.get_ticks()
         animation = self.animations[self.cast_type]
         animation_duration = animation.frames * animation.animation_cooldown
 
+        if current - self.lastupdate >= animation_duration - 10:
+            self.cast_can_hit = True
         # Only remove the cast after the animation has fully played
         if current - self.lastupdate >= animation_duration:
             self.lastupdate = current
