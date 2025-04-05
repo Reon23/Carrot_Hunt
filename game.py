@@ -108,9 +108,14 @@ class Engine:
             for bullet in enemy_bullets:
                 bullet.updatePosition(self.display_scroll, self.player)
                 bullet.handleCollision(self.player, screen)
+                if bullet.__class__.__name__ == "MageBlob":
+                    bullet.handleBullets(bullets, screen)
                 bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
                 if screen_rect.colliderect(bullet_rect):
-                    bullet.render(screen)
+                    if bullet.__class__.__name__ == 'MageCast':
+                        bullet.render(screen)
+                    else:
+                        self.entities.append(bullet)
 
 
             for item in collectable_list:

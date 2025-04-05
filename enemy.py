@@ -553,7 +553,7 @@ class Mage(pygame.sprite.Sprite):
     def handleAttack(self, player, screen):
         current_time = pygame.time.get_ticks()
         options = ["atk1", "atk2"]
-        probabilities = [0, 1] 
+        probabilities = [0.65, 0.35] 
 
         if self.selected_attack is None and current_time - self.last_post_attack_time < self.post_attack_delay:
             self.attack = False
@@ -581,24 +581,12 @@ class Mage(pygame.sprite.Sprite):
         if not self.spell_cast:
             
             if type == "atk1":
-                if not self.flipped:
-                    enemy_rect = pygame.Rect(self.render_x + self.width//2 + 50, 
-                            self.render_y + self.height + 30, 
-                            self.width + 40, 
-                            self.height
-                            )
-                else:
-                    enemy_rect = pygame.Rect(self.render_x - self.width//2 - 50, 
-                            self.render_y + self.height + 30, 
-                            self.width + 40, 
-                            self.height
-                            )
-                # pygame.draw.rect(screen, "red", enemy_rect)
-                if enemy_rect.colliderect(player_rect):
-                    if not self.attack_hit:
-                        player.hurt(10)
-                        self.attack_hit = True
-            
+                if not self.spell_cast:
+                    if not self.flipped:
+                        enemy_bullets.add_internal(MageBlob((self.x + self.width * 1.6) + random.randrange(-30, 30), (self.y + self.height) + random.randrange(-30, 30)))
+                    else:
+                        enemy_bullets.add_internal(MageBlob((self.x - self.width//2) + random.randrange(-30, 30), (self.y + self.height) + random.randrange(-30, 30)))
+                    self.spell_cast = True
             elif type == "atk2":
                 if not self.spell_cast:
                     enemy_bullets.add_internal(MageCast())
@@ -632,6 +620,115 @@ class Mage(pygame.sprite.Sprite):
 
     def render(self, screen):
         self.animations[self.mode].animate_old(screen, self.render_x - 200 if self.flipped else self.render_x, self.render_y, self.flipped)
+
+class MageBlob(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.render_x = self.x
+        self.render_y = self.y
+        self.width = 64
+        self.height = 64
+        self.damage = 20
+        self.health = 25
+        self.speed = 10
+        self.animation = {'follow' : Animate('./assets/enemy/Mage/MageBlob.png', self.x, self.y, self.width, self.height, 10, 0, 1, 50)}
+        self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
+        self.blobBehavior = 'follow'
+        self.blobLife = 6000
+        self.lastupdate = pygame.time.get_ticks()
+
+    def updatePosition(self, displayScroll, player):
+        # Calculate the player's world position.
+        player_world_x = player.x + displayScroll[0]
+        player_world_y = player.y + displayScroll[1]
+
+        # Compute the direction toward the player.
+        dx = player_world_x - self.x
+        dy = player_world_y - self.y
+        distance = math.sqrt(dx * dx + dy * dy)
+
+        if distance > 0:
+            # Normalize and scale by the enemy's speed.
+            dir_x = dx / distance
+            dir_y = dy / distance
+
+            follow_dx = dir_x * self.speed
+            follow_dy = dir_y * self.speed
+
+            # Curve movement: calculate a perpendicular vector (rotated 90 degrees)
+            perp_x = -dir_y
+            perp_y = dir_x
+
+            # Use a sine wave based on time to oscillate the curve
+            wave = math.sin(pygame.time.get_ticks() * 0.0035)  # frequency = 0.005
+            curve_strength = 6  # tweak this for stronger curvature
+
+            # Apply the curve to the direction
+            curve_dx = perp_x * wave * curve_strength
+            curve_dy = perp_y * wave * curve_strength
+
+            follow_dx += curve_dx
+            follow_dy += curve_dy
+        else:
+            follow_dx, follow_dy = 0, 0
+
+        # Compute separation from other blobs (optional, but included)
+        enemy_positions = np.array([
+            (other.x, other.y) for other in enemy_bullets if other != self
+        ], dtype=np.float32)
+
+        if enemy_positions.any():
+            sep_dx, sep_dy = compute_separation(self.x, self.y, self.speed, enemy_positions, 100)
+            total_dx = (follow_dx + sep_dx) * (time['delta'] * 60)
+            total_dy = (follow_dy + sep_dy) * (time['delta'] * 60)
+        else:
+            total_dx = follow_dx * (time['delta'] * 60)
+            total_dy = follow_dy * (time['delta'] * 60)
+
+        # Update world position
+        self.x += total_dx
+        self.y += total_dy
+
+        # Update render position
+        self.render_x = self.x - displayScroll[0]
+        self.render_y = self.y - displayScroll[1]
+
+    def handleCollision(self, player, screen):
+        player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
+        self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
+        # pygame.draw.rect(screen, "red", blob_rect)
+
+        if self.blob_rect.colliderect(player_rect):
+            player.hurt(self.damage)
+            self.kill()
+
+    def handleBullets(self, bullets, screen):
+        self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
+        # pygame.draw.rect(screen, "red", self.blob_rect)
+        for bullet in bullets:
+            bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height*1.5)
+            # pygame.draw.rect(screen, "red", bullet_rect)
+
+            if self.blob_rect.colliderect(bullet_rect):
+                self.hurt(bullet.damage)
+                bullet.kill()
+
+    def hurt(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.kill()
+    
+    def kill(self):
+        enemy_bullets.remove_internal(self)
+    
+    def render(self, screen):
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.lastupdate >= self.blobLife:
+            self.kill()
+
+        self.animation[self.blobBehavior].animate_old(screen, self.render_x, self.render_y)
 
 class MageCast(pygame.sprite.Sprite):
     def __init__(self):

@@ -10,6 +10,7 @@ class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2', 'mage']
         self.probabilities = [0.5, 0.3, 0.2]
+        # self.probabilities = [0, 0, 1]
         self.max_spawn = 300
         self.spawn_count = 0
 
