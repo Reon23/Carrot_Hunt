@@ -1,10 +1,16 @@
 import pygame
 
+#Initialize Pygame
+pygame.init()
+
 # Constants
 # SCREEN_WIDTH = 1280
 # SCREEN_HEIGHT = 720
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+# SCREEN_WIDTH = 1920
+# SCREEN_HEIGHT = 1080
+info = pygame.display.Info()
+SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
+
 # Culling margin (prevents pop-in)
 CULLING_MARGIN = 500 
 # Delta Time
@@ -19,7 +25,6 @@ from collectables import collectable_list
 
 
 # pygame setup
-pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Cursed Carrots')
 clock = pygame.time.Clock()
@@ -40,7 +45,7 @@ class Engine:
         self.player_crosshair = CrossHair()
         self.enemy_spawner = EnemySpawner()
         self.collectable_spawner = CollectableSpawner()
-        self.fullscreen = False
+        self.fullscreen = True
         self.entities = []
         # Hides the mouse
         pygame.mouse.set_visible(False)
@@ -69,15 +74,25 @@ class Engine:
                         self.toggle_fullscreen()
 
             # Handle keyboard events
+            movement = pygame.math.Vector2(0, 0)
             keys = pygame.key.get_pressed()
+
             if keys[pygame.K_a]:
-                self.display_scroll[0] -= self.player_speed * time['delta'] * 60
+                movement.x -= 1
             if keys[pygame.K_d]:
-                self.display_scroll[0] += self.player_speed * time['delta'] * 60
+                movement.x += 1
             if keys[pygame.K_w]:
-                self.display_scroll[1] -= self.player_speed * time['delta'] * 60
+                movement.y -= 1
             if keys[pygame.K_s]:
-                self.display_scroll[1] += self.player_speed * time['delta'] * 60
+                movement.y += 1
+
+            # Normalize the movement vector to prevent faster diagonal movement
+            if movement.length_squared() > 0:
+                movement = movement.normalize()
+
+            # Apply movement
+            self.display_scroll[0] += movement.x * self.player_speed * time['delta'] * 60
+            self.display_scroll[1] += movement.y * self.player_speed * time['delta'] * 60
 
             # Render screen
             screen.fill((133, 51, 19))

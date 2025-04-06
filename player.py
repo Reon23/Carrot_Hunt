@@ -32,6 +32,9 @@ class Player(pygame.sprite.Sprite):
         self.player_health.updateHealth(max(0, self.player_health.health - damage))
         if self.player_health.health - damage <= 0:
             self.kill()
+
+    def heal(self, points):
+        self.player_health.updateHealth(min(100, self.player_health.health + points))
     
     def kill(self):
         pass

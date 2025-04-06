@@ -4,6 +4,7 @@ import random
 import numpy as np
 from game import time
 from animator import Animate
+from collectables import collectable_list, Heart
 from numba import njit
 
 enemy_list = pygame.sprite.Group()
@@ -46,6 +47,8 @@ class Morph1(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 50
+        self.drop_health = 0.35
+        self.drop_points = self.health//2
         self.points = 40
         self.weakened_health = 10
         self.hurt = False
@@ -220,8 +223,7 @@ class Morph1(pygame.sprite.Sprite):
         # Enemy hitbox
         enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
         for bullet in bullet_group.sprites():
-            bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
-            if enemy_rect.colliderect(bullet_rect):
+            if enemy_rect.colliderect(bullet.hitbox):
                 self.health -= bullet.damage
                 
                 if self.health <= self.weakened_health:
@@ -236,9 +238,14 @@ class Morph1(pygame.sprite.Sprite):
             self.health = self.weakened_health + self.weakened_health//2
 
         if self.health <= 0:
+            self.dropHealth()
             self.mode = "death"
             player.player_score.addScore(self.points)
             enemy_list.remove_internal(self)  # Remove enemy when health reaches zero
+
+    def dropHealth(self):
+        if np.random.choice([True, False], p=[self.drop_health, 1-self.drop_health]):
+            collectable_list.add_internal(Heart(self.x + self.width//2, self.y + self.height//2, self.drop_points))
 
     def render(self, screen):
         # Render with corrected position
@@ -262,6 +269,8 @@ class Morph2(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 70  # More health than Morph1
+        self.drop_health = 0.2
+        self.drop_points = self.health//2
         self.points = 70
         self.weakened_health = 20
         self.hurt = False
@@ -422,7 +431,7 @@ class Morph2(pygame.sprite.Sprite):
 
         enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
         for bullet in bullet_group.sprites():
-            if enemy_rect.colliderect(pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)):
+            if enemy_rect.colliderect(bullet.hitbox):
                 self.health -= bullet.damage
                 
                 if self.health <= self.weakened_health:
@@ -436,10 +445,15 @@ class Morph2(pygame.sprite.Sprite):
             self.health = self.weakened_health + self.weakened_health//2
 
         if self.health <= 0:
+            self.dropHealth()
             self.mode = "death"
             player.player_score.addScore(self.points)
             enemy_list.remove_internal(self)
 
+    def dropHealth(self):
+        if np.random.choice([True, False], p=[self.drop_health, 1-self.drop_health]):
+            collectable_list.add_internal(Heart(self.x + self.width//2, self.y + self.height//2, self.drop_points))
+    
     def render(self, screen):
         self.animations[self.mode].animate_old(screen, self.render_x - 120 if self.flipped else self.render_x, self.render_y, self.flipped)
 
@@ -458,6 +472,8 @@ class Mage(pygame.sprite.Sprite):
         self.render_y = y
         
         self.health = 30  # More health than Morph1
+        self.drop_health = 0.4
+        self.drop_points = self.health//2
         self.points = 50
         self.weakened_health = 0
         self.dying = False
@@ -577,7 +593,6 @@ class Mage(pygame.sprite.Sprite):
             self.spell_cast = False
 
     def attackHit(self, type, player, screen):
-        player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
         if not self.spell_cast:
             
             if type == "atk1":
@@ -596,7 +611,7 @@ class Mage(pygame.sprite.Sprite):
 
         enemy_rect = pygame.Rect(self.render_x + self.width//2, self.render_y + self.height + 10, self.width//2, self.height)
         for bullet in bullet_group.sprites():
-            if enemy_rect.colliderect(pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)):
+            if enemy_rect.colliderect(bullet.hitbox):
                 self.health -= bullet.damage
                 bullet.kill()
 
@@ -614,10 +629,15 @@ class Mage(pygame.sprite.Sprite):
             if current_time - self.death_period >= death_cooldown:
                 self.death_period = current_time
                 player.player_score.addScore(self.points)
+                self.dropHealth()
                 enemy_list.remove_internal(self)
             else:
                 return
 
+    def dropHealth(self):
+        if np.random.choice([True, False], p=[self.drop_health, 1-self.drop_health]):
+            collectable_list.add_internal(Heart(self.x + self.width//2, self.y + self.height//2, self.drop_points))
+    
     def render(self, screen):
         self.animations[self.mode].animate_old(screen, self.render_x - 200 if self.flipped else self.render_x, self.render_y, self.flipped)
 
@@ -707,8 +727,8 @@ class MageBlob(pygame.sprite.Sprite):
         self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
         # pygame.draw.rect(screen, "red", self.blob_rect)
         for bullet in bullets:
-            bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height*1.5)
-            # pygame.draw.rect(screen, "red", bullet_rect)
+            # bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height*1.5)
+            bullet_rect = bullet.hitbox
 
             if self.blob_rect.colliderect(bullet_rect):
                 self.hurt(bullet.damage)

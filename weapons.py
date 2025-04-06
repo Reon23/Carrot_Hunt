@@ -17,7 +17,7 @@ class Ak47:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 50
-        self.bullet_damage = 12
+        self.bullet_damage = 20
         self.last_update = pygame.time.get_ticks()
         self.player_speed = player_speed
 
@@ -119,6 +119,7 @@ class Bullet:
         self.angle = math.atan2(y-mouse_y, x-mouse_x)
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
+        self.hitbox = None
         
         # Create a bullet surface with transparency
         self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -135,25 +136,34 @@ class Bullet:
         current_time = pygame.time.get_ticks()
         self.x -= int(self.x_vel * time['delta'] * 60)
         self.y -= int(self.y_vel * time['delta'] * 60)
-        
-        if current_time - self.last_update >= self.bullet_lifetime:
-            self.last_update = current_time
-            bullets.remove_internal(self)
-        
-        # Rotate the bullet image
-        if not flipped:
-            rotated_image = pygame.transform.rotate(self.image, self.bullet_angle)  # Rotate clockwise
-        else:
-            rotated_image = pygame.transform.rotate(self.image, -self.bullet_angle)  # Rotate counterclockwise
 
-        # Get the new rect centered at the bullet's position
+        if current_time - self.last_update >= self.bullet_lifetime:
+            bullets.remove_internal(self)
+
+        # Use correct angle for rotation (visual)
+        visual_angle = -self.bullet_angle if flipped else self.bullet_angle
+        rotated_image = pygame.transform.rotate(self.image, visual_angle)
+
+        # Use self.angle (radians) for hitbox size calculation
+        rotated_width = abs(self.width * math.cos(self.angle)) + abs(self.height * math.sin(self.angle))
+        rotated_height = abs(self.width * math.sin(self.angle)) + abs(self.height * math.cos(self.angle))
+
+        # Update hitbox
+        self.hitbox = pygame.Rect(
+            self.x - rotated_width // 2,
+            self.y - rotated_height // 2,
+            rotated_width,
+            rotated_height
+        )
+
+        # Center the rotated image on (self.x, self.y)
         rotated_rect = rotated_image.get_rect(center=(self.x, self.y))
 
-        # Draw the rotated bullet
+        # Draw the bullet
         screen.blit(rotated_image, rotated_rect.topleft)
-       
 
-
+        # draw hitbox for debug
+        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 class GlockP80:
     def __init__(self, x, y, scale, player_speed):
