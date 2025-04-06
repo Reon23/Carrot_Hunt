@@ -16,22 +16,21 @@ CULLING_MARGIN = 500
 # Delta Time
 time = {'delta' : 1}
 
-from player import Player
-from hud import CrossHair
-from enemy import enemy_list, enemy_bullets
-from weapons import bullets
-from spawner import EnemySpawner, CollectableSpawner
-from collectables import collectable_list
-
-
 # pygame setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Cursed Carrots')
 clock = pygame.time.Clock()
 
-# Font setup for FPS display
+# Font setup
 pygame.font.init()
-font = pygame.font.Font(None, 30)  # Default pygame font
+font = pygame.font.Font('./assets/font/VeniceClassic.ttf', 30)  # Default pygame font
+
+from player import Player
+from hud import CrossHair
+from enemy import enemy_list, enemy_bullets
+from weapons import bullets
+from spawner import EnemySpawner, CollectableSpawner, wave_manager
+from collectables import collectable_list
 
 class Engine:
 
@@ -46,6 +45,7 @@ class Engine:
         self.enemy_spawner = EnemySpawner()
         self.collectable_spawner = CollectableSpawner()
         self.fullscreen = True
+        self.show_frames = False
         self.entities = []
         # Hides the mouse
         pygame.mouse.set_visible(False)
@@ -60,8 +60,8 @@ class Engine:
 
     def render_fps(self):
         """Displays the FPS counter on the screen."""
-        fps_text = font.render(f"FPS: {int(clock.get_fps())}", True, (255, 255, 255))
-        screen.blit(fps_text, (10, 10))  # Draw FPS in the top-left corner
+        fps_text = font.render(f"{int(clock.get_fps())}", True, (255, 255, 255))
+        screen.blit(fps_text, ((SCREEN_WIDTH * 0.025), int(SCREEN_HEIGHT * 0.95)))  # Draw FPS in the top-left corner
 
     def run(self):
         while self.running:
@@ -105,7 +105,8 @@ class Engine:
                 SCREEN_HEIGHT + (CULLING_MARGIN * 2)
             )
 
-            
+            if not wave_manager['wave set']:
+                self.enemy_spawner.updateSpawner()
             self.enemy_spawner.handle_spawn(self.display_scroll)
             self.collectable_spawner.handle_spawn(self.display_scroll)
 
@@ -161,7 +162,8 @@ class Engine:
 
 
             # Render FPS counter
-            self.render_fps()
+            if self.show_frames:
+                self.render_fps()
             self.player_crosshair.render(screen, mouse_x, mouse_y)
 
             pygame.display.flip()

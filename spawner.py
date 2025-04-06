@@ -6,6 +6,37 @@ from enemy import enemy_list, Morph1, Morph2, Mage, Dummy
 from collectables import collectable_list, Carrot
 from game import SCREEN_WIDTH, SCREEN_HEIGHT
 
+wave_manager = {
+    "wave no": 1,
+    "wave set": False,
+    "wave complete": False,
+    1: {
+        "enemies" : [0.8, 0.2, 0],
+        "max enemies" : 10,
+        "spawn rate" : 2000
+        },
+    2: {
+        "enemies" : [0.7, 0.3, 0],
+        "max enemies" : 20,
+        "spawn rate" : 1500
+        },
+    3: {
+        "enemies" : [0.6, 0.4, 0],
+        "max enemies" : 40,
+        "spawn rate" : 1500
+        },
+    4: {
+        "enemies" : [0.55, 0.35, 0.1],
+        "max enemies" : 100,
+        "spawn rate" : 1000
+        },
+    5: {
+        "enemies" : [0.5, 0.3, 0.2],
+        "max enemies" : 200,
+        "spawn rate" : 1000
+        },
+}
+
 class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2', 'mage']
@@ -21,6 +52,14 @@ class EnemySpawner:
         
         enemy_list.add(Dummy())
         enemy_list.add(Dummy())
+
+    def updateSpawner(self):
+        self.probabilities = wave_manager[wave_manager['wave no']]['enemies']
+        self.max_spawn = wave_manager[wave_manager['wave no']]['max enemies']
+        self.spawn_cooldown = wave_manager[wave_manager['wave no']]['spawn rate']
+        self.spawn_count = 0
+        wave_manager['wave no'] += 1
+        wave_manager['wave set'] = True
 
     def get_spawn_position(self, displayScroll):
         """Returns a random position outside the screen boundaries, adjusted for scrolling."""
@@ -49,6 +88,9 @@ class EnemySpawner:
                 enemy_list.add_internal(Mage(x, y, 128, 64, 3))
 
             self.spawn_count += 1
+            if self.spawn_count >= self.max_spawn:
+                wave_manager['wave complete'] = True
+                wave_manager['wave set'] = False
             # print("Ememy ",self.spawn_count, " Type : ", spawning_enemy)
 
     def handle_outside(self, displayScroll):
