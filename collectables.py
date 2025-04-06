@@ -9,7 +9,7 @@ class Carrot(pygame.sprite.Sprite):
         self.y = y
         self.render_x = self.x
         self.render_y = self.y
-        self.points = 10
+        self.points = 30
         self.width = 32
         self.height = 32
         self.offset = 30

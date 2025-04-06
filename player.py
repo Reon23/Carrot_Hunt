@@ -2,7 +2,7 @@ import pygame
 import math
 from animator import Animate
 from weapons import Ak47, GlockP80, Submachine
-from hud import healthBar, ScoreBar, WaveBar
+from hud import healthBar, ScoreBar
 
 class Player(pygame.sprite.Sprite):
     
@@ -15,7 +15,6 @@ class Player(pygame.sprite.Sprite):
         self.player_speed = player_speed
         self.player_health = healthBar(100)
         self.player_score = ScoreBar()
-        self.wave_bar = WaveBar()
         self.animations = {
             "d": Animate('./assets/player/walk_down.png', self.x, self.y, self.width, self.height, 5, 0, 2, 50),
             "l": Animate('./assets/player/walk_left.png', self.x, self.y, self.width, self.height, 8, 0, 2, 50),
@@ -26,8 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.play_animation = False
 
         # self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
-        # self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
-        self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
+        self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):
         self.player_health.updateHealth(max(0, self.player_health.health - damage))
@@ -36,6 +35,12 @@ class Player(pygame.sprite.Sprite):
 
     def heal(self, points):
         self.player_health.updateHealth(min(100, self.player_health.health + points))
+
+    def upgradeWeapon(self):
+        if self.player_score.score >= 5000 and not isinstance(self.player_weapon, Ak47):
+            self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
+        elif self.player_score.score >= 600 and self.player_score.score < 5000 and not isinstance(self.player_weapon, Submachine):
+            self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def kill(self):
         pass
@@ -64,9 +69,10 @@ class Player(pygame.sprite.Sprite):
         self.current_animation.x = self.x
         self.current_animation.y = self.y
 
+        self.upgradeWeapon()
+
         # Animate current frame
         self.current_animation.animate(screen, self.play_animation, self.x, self.y, 0, False)
         self.player_weapon.render(screen, self.x, self.y, keys)
         self.player_health.render(screen)
         self.player_score.render(screen)
-        self.wave_bar.render(screen)

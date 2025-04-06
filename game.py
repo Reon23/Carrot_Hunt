@@ -26,11 +26,12 @@ pygame.font.init()
 font = pygame.font.Font('./assets/font/VeniceClassic.ttf', 30)  # Default pygame font
 
 from player import Player
-from hud import CrossHair
+from hud import CrossHair, WaveBar
 from enemy import enemy_list, enemy_bullets
 from weapons import bullets
 from spawner import EnemySpawner, CollectableSpawner, wave_manager
 from collectables import collectable_list
+from effects import ScreenEffects
 
 class Engine:
 
@@ -41,12 +42,18 @@ class Engine:
         self.display_scroll = [0, 0]
         self.player_speed = 10
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
+        self.screen_effect = ScreenEffects()
         self.player_crosshair = CrossHair()
         self.enemy_spawner = EnemySpawner()
         self.collectable_spawner = CollectableSpawner()
+        self.wave_bar = WaveBar()
+        self.waiting = True
+        self.wait_cooldown = 8000
+        self.last_update = 0
         self.fullscreen = True
         self.show_frames = False
         self.entities = []
+        self.fading = False
         # Hides the mouse
         pygame.mouse.set_visible(False)
 
@@ -65,6 +72,7 @@ class Engine:
 
     def run(self):
         while self.running:
+            current_time = pygame.time.get_ticks()
             mouse_x, mouse_y = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -107,7 +115,9 @@ class Engine:
 
             if not wave_manager['wave set']:
                 self.enemy_spawner.updateSpawner()
-            self.enemy_spawner.handle_spawn(self.display_scroll)
+            
+            if not self.waiting:
+                self.enemy_spawner.handle_spawn(self.display_scroll)
             self.collectable_spawner.handle_spawn(self.display_scroll)
 
             # Clear entities list to prevent duplicates
@@ -166,6 +176,15 @@ class Engine:
                 self.render_fps()
             self.player_crosshair.render(screen, mouse_x, mouse_y)
 
+            if current_time - self.last_update >= self.wait_cooldown:
+                self.waiting = False
+
+            if not self.waiting:
+                self.wave_bar.render(screen)
+
+            if not self.screen_effect.fade_complete:
+                self.screen_effect.FadeOut(screen)
+            
             pygame.display.flip()
             
             # Calculate Delta Time & Set Frame Rate

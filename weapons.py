@@ -17,7 +17,7 @@ class Ak47:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 50
-        self.bullet_damage = 20
+        self.bullet_damage = 40
         self.last_update = pygame.time.get_ticks()
         self.player_speed = player_speed
 
@@ -175,7 +175,7 @@ class GlockP80:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 60  # Faster than AK-47
-        self.bullet_damage = 5   # Lower damage than AK-47
+        self.bullet_damage = 10
         self.last_update = pygame.time.get_ticks()
         self.fire_rate = 250  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
@@ -246,7 +246,7 @@ class Submachine:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 60  # Faster than AK-47
-        self.bullet_damage = 10   # Lower damage than AK-47
+        self.bullet_damage = 25   # Lower damage than AK-47
         self.last_update = pygame.time.get_ticks()
         self.fire_rate = 100  # Faster fire rate (100ms cooldown)
         self.player_speed = player_speed
