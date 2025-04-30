@@ -651,11 +651,13 @@ class MageBlob(pygame.sprite.Sprite):
         self.height = 64
         self.damage = 20
         self.health = 25
+        self.points = 10
         self.speed = 10
         self.animation = {'follow' : Animate('./assets/enemy/Mage/MageBlob.png', self.x, self.y, self.width, self.height, 10, 0, 1, 50)}
         self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
         self.blobBehavior = 'follow'
         self.blobLife = 6000
+        self.blobkilled = False
         self.lastupdate = pygame.time.get_ticks()
 
     def updatePosition(self, displayScroll, player):
@@ -723,7 +725,7 @@ class MageBlob(pygame.sprite.Sprite):
             player.hurt(self.damage)
             self.kill()
 
-    def handleBullets(self, bullets, screen):
+    def handleBullets(self, bullets, player, screen):
         self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
         # pygame.draw.rect(screen, "red", self.blob_rect)
         for bullet in bullets:
@@ -731,16 +733,19 @@ class MageBlob(pygame.sprite.Sprite):
             bullet_rect = bullet.hitbox
 
             if self.blob_rect.colliderect(bullet_rect):
-                self.hurt(bullet.damage)
+                self.hurt(bullet.damage, player)
                 bullet.kill()
 
-    def hurt(self, damage):
+    def hurt(self, damage, player):
         self.health -= damage
         if self.health <= 0:
+            player.player_score.addScore(self.points)
             self.kill()
     
     def kill(self):
-        enemy_bullets.remove_internal(self)
+        if not self.blobkilled:
+            enemy_bullets.remove_internal(self)
+            self.blobkilled = True
     
     def render(self, screen):
         current_time = pygame.time.get_ticks()

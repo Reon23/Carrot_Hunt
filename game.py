@@ -1,4 +1,5 @@
 import pygame
+from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
 
 #Initialize Pygame
 pygame.init()
@@ -9,7 +10,7 @@ pygame.init()
 # SCREEN_WIDTH = 1920
 # SCREEN_HEIGHT = 1080
 info = pygame.display.Info()
-SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
+SCREEN_WIDTH, SCREEN_HEIGHT = DISPLAY_WIDTH, DISPLAY_HEIGHT
 
 # Culling margin (prevents pop-in)
 CULLING_MARGIN = 500 
@@ -17,8 +18,7 @@ CULLING_MARGIN = 500
 time = {'delta' : 1}
 
 # pygame setup
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Cursed Carrots')
+screen = SCREEN 
 clock = pygame.time.Clock()
 
 # Font setup
@@ -54,8 +54,6 @@ class Engine:
         self.show_frames = False
         self.entities = []
         self.fading = False
-        # Hides the mouse
-        pygame.mouse.set_visible(False)
 
     def toggle_fullscreen(self):
         """Toggles fullscreen mode when F11 is pressed."""
@@ -135,7 +133,7 @@ class Engine:
                 bullet.updatePosition(self.display_scroll, self.player)
                 bullet.handleCollision(self.player, screen)
                 if bullet.__class__.__name__ == "MageBlob":
-                    bullet.handleBullets(bullets, screen)
+                    bullet.handleBullets(bullets, self.player, screen)
                 bullet_rect = pygame.Rect(bullet.x, bullet.y, bullet.width, bullet.height)
                 if screen_rect.colliderect(bullet_rect):
                     if bullet.__class__.__name__ == 'MageCast':

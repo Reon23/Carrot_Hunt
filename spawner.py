@@ -49,9 +49,14 @@ class EnemySpawner:
         self.last_spawn = 0
 
         self.outside_cooldown = 1000  # Adjustable cooldown in milliseconds
+        self.remove_buffer = False
         
-        enemy_list.add(Dummy())
-        enemy_list.add(Dummy())
+        self.buffer1 = Morph1(-10000, 10000, 128, 64, 1)
+        self.buffer2 = Morph1(-10000, 10000, 128, 64, 1)
+        enemy_list.add_internal(self.buffer1)
+        enemy_list.add_internal(self.buffer2)
+        enemy_list.add_internal(Dummy())
+        enemy_list.add_internal(Dummy())
 
     def updateSpawner(self):
         if wave_manager['wave no'] <= 5:
@@ -90,6 +95,10 @@ class EnemySpawner:
 
             self.spawn_count += 1
             # print("Ememy ",self.spawn_count, " Type : ", spawning_enemy)
+            if not self.remove_buffer:
+                enemy_list.remove_internal(self.buffer1)
+                enemy_list.remove_internal(self.buffer2)
+                self.remove_buffer = True
         else:
             if (len(enemy_list) - 2) == 0:
                 wave_manager['wave complete'] = True
