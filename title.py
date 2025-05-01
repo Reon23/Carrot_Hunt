@@ -1,6 +1,7 @@
 import pygame
 import math
 from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
+from effects import ScreenEffects
 
 pygame.init()
 font = pygame.font.Font('./assets/font/VeniceClassic.ttf', 100)
@@ -8,6 +9,8 @@ background = pygame.image.load('./assets/bg.png')
 title = pygame.image.load('./assets/title.png')
 small_font = pygame.font.Font('./assets/font/VeniceClassic.ttf', 24)
 clock = pygame.time.Clock()
+screen_effect = ScreenEffects()
+start_game = False
 
 WHITE = (255, 255, 255)
 BACKGROUND_COLOR = (0, 0, 0)
@@ -87,6 +90,7 @@ def render_wrapped_text(text, font, color, max_width):
 
 def show_title_screen():
     SW, SH = DISPLAY_WIDTH, DISPLAY_HEIGHT
+    global start_game
     screen = SCREEN
 
     scaled_bg, bg_pos = scale_and_center_background(
@@ -105,8 +109,8 @@ def show_title_screen():
             if ev.type == pygame.QUIT:
                 return -1
             if ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_RETURN:
-                    return "play"
+                if ev.key == pygame.K_RETURN and screen_effect.fade_complete:
+                    start_game = True
                 if ev.key == pygame.K_ESCAPE:
                     return -1
 
@@ -124,6 +128,15 @@ def show_title_screen():
         for i, line_surf in enumerate(wrapped_credits):
             line_rect = line_surf.get_rect(center=(SW // 2, y_start + i * small_font.get_linesize()))
             screen.blit(line_surf, line_rect)
+
+        if not screen_effect.fade_complete:
+            screen_effect.FadeOut(screen, 5)
+
+        if not screen_effect.fade_in_complete and start_game:
+            screen_effect.FadeIn(screen, 5)
+
+        if screen_effect.fade_in_complete:
+            return "play"
 
         pygame.display.flip()
         clock.tick(60)
