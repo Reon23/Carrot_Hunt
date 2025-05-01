@@ -10,13 +10,10 @@ if __name__ == '__main__':
     game_engine = Engine()
     state = 'title'
 
-    # keep going until the user quits
     while state != -1:
         if state == 'title':
-            pygame.mouse.set_visible(True)
-            state = show_title_screen()     # returns "play" or -1
+            state = show_title_screen()
         elif state == 'play':
-            pygame.mouse.set_visible(False)
-            game_engine.run()               # this blocks until the game exits
-            state = 'title'                 # after game over, go back to title
+            game_engine.run()
+            state = 'title'
     pygame.quit()

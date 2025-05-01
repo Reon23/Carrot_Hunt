@@ -54,6 +54,7 @@ class Engine:
         self.show_frames = False
         self.entities = []
         self.fading = False
+        pygame.mouse.set_visible(False)
 
     def toggle_fullscreen(self):
         """Toggles fullscreen mode when F11 is pressed."""
