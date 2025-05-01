@@ -1,6 +1,7 @@
 import pygame
 import math
 from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
+from audio import SFXplayer
 from effects import ScreenEffects
 
 pygame.init()
@@ -11,6 +12,7 @@ small_font = pygame.font.Font('./assets/font/VeniceClassic.ttf', 24)
 clock = pygame.time.Clock()
 screen_effect = ScreenEffects()
 start_game = False
+start_sfx = SFXplayer('./assets/audio/select.ogg')
 
 WHITE = (255, 255, 255)
 BACKGROUND_COLOR = (0, 0, 0)
@@ -110,6 +112,7 @@ def show_title_screen():
                 return -1
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_RETURN and screen_effect.fade_complete:
+                    start_sfx.playSound()
                     start_game = True
                 if ev.key == pygame.K_ESCAPE:
                     return -1

@@ -7,7 +7,7 @@ from collectables import collectable_list, Carrot
 from game import SCREEN_WIDTH, SCREEN_HEIGHT
 
 wave_manager = {
-    "wave no": 1,
+    "wave no": 5,
     "wave set": False,
     "wave complete": False,
     1: {

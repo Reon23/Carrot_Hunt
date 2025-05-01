@@ -1,5 +1,6 @@
 import pygame
 from animator import Animate
+from audio import SFXplayer
 
 collectable_list = pygame.sprite.Group()
 
@@ -17,6 +18,7 @@ class Carrot(pygame.sprite.Sprite):
         self.sprite = Animate('./assets/collectables/carrot/carrot.png', 
                               self.x, self.y, self.width, self.height, 8, 0, self.scale, 100)
         self.hitbox = pygame.Rect(self.render_x, self.render_y, self.width//4, self.height//4)
+        self.pickup_sfx = SFXplayer('./assets/audio/pickup.mp3', 0.5)
 
     def handleCollision(self, player):
         self.hitbox = pygame.Rect(self.render_x + self.offset//2, self.render_y + self.offset//2, 
@@ -25,6 +27,7 @@ class Carrot(pygame.sprite.Sprite):
 
         if self.hitbox.colliderect(player_rect):
             player.player_score.addScore(self.points)
+            self.pickup_sfx.playSound()
             self.kill()
     
     def updatePosition(self, displayScroll):

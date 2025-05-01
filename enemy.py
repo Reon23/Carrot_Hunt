@@ -3,6 +3,7 @@ import math
 import random
 import numpy as np
 from game import time
+from audio import SFXplayer
 from animator import Animate
 from collectables import collectable_list, Heart
 from numba import njit
@@ -61,6 +62,9 @@ class Morph1(pygame.sprite.Sprite):
         self.attack_cooldwon = 300
         self.last_hit_time = 0
         self.hit_cooldown = 2000
+        self.play_sfx = True
+        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg')
+        self.sfx_atk2 = SFXplayer('./assets/audio/morph_atk2.mp3')
 
         self.animations = {
             "idle" : Animate('./assets/enemy/Morph1/Morph.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
@@ -162,12 +166,20 @@ class Morph1(pygame.sprite.Sprite):
             self.mode = self.selected_attack
             self.attack = True  # Set attack to True when actually attacking
         
+        if self.selected_attack == 'atk1' and self.play_sfx:
+            self.sfx_atk1.playSound()
+            self.play_sfx = False
+        
+        if self.selected_attack == 'atk2' and self.play_sfx:
+            self.sfx_atk2.playSound()
+            self.play_sfx = False
         self.attackHit(self.mode, player, screen)
 
         # If attack is finished (cooldown over), enter post-attack delay
         if current_time - self.last_attact_time >= self.attack_cooldwon:
             self.selected_attack = None  # Reset attack selection
             self.last_post_attack_time = current_time  # Start post-attack delay timer
+            self.play_sfx = True
             self.attack = False  # Enemy is no longer attacking
             self.attack_hit = False
     
@@ -283,6 +295,9 @@ class Morph2(pygame.sprite.Sprite):
         self.attack_cooldown = 400
         self.last_hit_time = 0
         self.hit_cooldown = 2500
+        self.play_sfx = True
+        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg')
+        self.sfx_atk2 = SFXplayer('./assets/audio/morph_atk2.mp3')
 
         self.animations = {
             "idle": Animate('./assets/enemy/Morph2/Morph2.png', self.x, self.y, self.width, self.height, 6, 0, self.scale, 50),
@@ -380,12 +395,20 @@ class Morph2(pygame.sprite.Sprite):
             self.mode = self.selected_attack
             self.attack = True
         
+        if self.selected_attack == 'atk1' and self.play_sfx:
+            self.sfx_atk1.playSound()
+            self.play_sfx = False
+        
+        if self.selected_attack == 'atk2' and self.play_sfx:
+            self.sfx_atk2.playSound()
+            self.play_sfx = False
         self.attackHit(self.mode, player, screen)
 
         if current_time - self.last_attack_time >= self.attack_cooldown:
             self.selected_attack = None
             self.last_post_attack_time = current_time
             self.attack = False
+            self.play_sfx = False
             self.attack_hit = False
 
     def attackHit(self, type, player, screen):
@@ -486,6 +509,8 @@ class Mage(pygame.sprite.Sprite):
         self.attack_cooldown = 400
         self.death_period = 0
         self.spell_cast = False
+        self.play_sfx = True
+        self.sfx_cast = SFXplayer('./assets/audio/mage_cast.ogg')
 
         self.animations = {
             "idle": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 7, 0, self.scale, 50),
@@ -582,6 +607,10 @@ class Mage(pygame.sprite.Sprite):
             self.last_attack_time = current_time
             self.mode = self.selected_attack
             self.attack = True
+
+        if self.selected_attack == "atk2" and self.play_sfx:
+            self.sfx_cast.playSound()
+            self.play_sfx = False
         
         self.attackHit(self.mode, player, screen)
 
@@ -589,6 +618,7 @@ class Mage(pygame.sprite.Sprite):
             self.selected_attack = None
             self.last_post_attack_time = current_time
             self.attack = False
+            self.play_sfx = True
             self.attack_hit = False
             self.spell_cast = False
 
