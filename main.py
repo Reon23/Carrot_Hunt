@@ -5,15 +5,15 @@ from weapons import reset_bullets
 from collectables import reset_carrots
 from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
 from title import Title
+from death import Death
 
-
-state = 'title'
 
 if __name__ == '__main__':
     state = 'title'
 
     while state != -1:
         if state == 'title':
+            pygame.mouse.set_visible(True)
             title = Title()
             state = title.show()
         elif state == 'play':
@@ -22,4 +22,8 @@ if __name__ == '__main__':
             reset_carrots()
             game_engine = Engine()
             state = game_engine.run()
+        elif state == 'death':
+            pygame.mouse.set_visible(True)
+            death = Death()
+            state = death.show()
     pygame.quit()

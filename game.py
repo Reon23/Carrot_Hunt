@@ -194,5 +194,5 @@ class Engine:
             if self.player.player_health.health <= 0:
                 self.running = False
                 self.enemy_spawner.resetSpawner()
-                return 'title'
+                return 'death'
 
