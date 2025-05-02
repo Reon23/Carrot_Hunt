@@ -11,6 +11,12 @@ from numba import njit
 enemy_list = pygame.sprite.Group()
 enemy_bullets = pygame.sprite.Group()
 
+def reset_enemy():
+    for enemy in enemy_list:
+        enemy_list.remove_internal(enemy)
+    for bullet in enemy_bullets.sprites():
+        bullet.kill()
+
 # This function computes the separation force for enemy avoidance.
 @njit
 def compute_separation(x, y, speed, enemy_positions, min_separation_distance, smoothing=0.2):

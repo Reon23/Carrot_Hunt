@@ -1,19 +1,25 @@
 import pygame
 from game import Engine
+from enemy import reset_enemy
+from weapons import reset_bullets
+from collectables import reset_carrots
 from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
-from title import show_title_screen
+from title import Title
 
 
 state = 'title'
 
 if __name__ == '__main__':
-    game_engine = Engine()
     state = 'title'
 
     while state != -1:
         if state == 'title':
-            state = show_title_screen()
+            title = Title()
+            state = title.show()
         elif state == 'play':
-            game_engine.run()
-            state = 'title'
+            reset_enemy()
+            reset_bullets()
+            reset_carrots()
+            game_engine = Engine()
+            state = game_engine.run()
     pygame.quit()

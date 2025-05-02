@@ -6,6 +6,10 @@ from audio import SFXplayer
 
 bullets = pygame.sprite.Group()
 
+def reset_bullets():
+    for bullet in bullets:
+        bullets.remove_internal(bullet)
+
 class Ak47:
 
     def __init__(self, x, y, scale, player_speed):

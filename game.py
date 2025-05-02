@@ -19,7 +19,6 @@ time = {'delta' : 1}
 
 # pygame setup
 screen = SCREEN 
-clock = pygame.time.Clock()
 
 # Font setup
 pygame.font.init()
@@ -39,6 +38,7 @@ class Engine:
 
     def __init__(self):
         self.running = True
+        self.clock = pygame.time.Clock()
         self.display_scroll = [0, 0]
         self.player_speed = 10
         self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 32, 32, self.player_speed)
@@ -48,7 +48,7 @@ class Engine:
         self.collectable_spawner = CollectableSpawner()
         self.wave_bar = WaveBar()
         self.waiting = True
-        self.wait_cooldown = 8000
+        self.wait_cooldown = 8000 + pygame.time.get_ticks()
         self.last_update = 0
         self.fullscreen = True
         self.show_frames = False
@@ -66,16 +66,18 @@ class Engine:
 
     def render_fps(self):
         """Displays the FPS counter on the screen."""
-        fps_text = font.render(f"{int(clock.get_fps())}", True, (255, 255, 255))
+        fps_text = font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255))
         screen.blit(fps_text, ((SCREEN_WIDTH * 0.025), int(SCREEN_HEIGHT * 0.95)))  # Draw FPS in the top-left corner
 
     def run(self):
+        global state
         while self.running:
             current_time = pygame.time.get_ticks()
             mouse_x, mouse_y = pygame.mouse.get_pos()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    return -1
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_F11:
                         self.toggle_fullscreen()
@@ -187,7 +189,10 @@ class Engine:
             pygame.display.flip()
             
             # Calculate Delta Time & Set Frame Rate
-            time['delta'] = clock.tick(120) / 1000.0
+            time['delta'] = self.clock.tick(120) / 1000.0
 
-        pygame.quit()
+            if self.player.player_health.health <= 0:
+                self.running = False
+                self.enemy_spawner.resetSpawner()
+                return 'title'
 

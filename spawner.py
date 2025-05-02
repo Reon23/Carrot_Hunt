@@ -7,7 +7,7 @@ from collectables import collectable_list, Carrot
 from game import SCREEN_WIDTH, SCREEN_HEIGHT
 
 wave_manager = {
-    "wave no": 5,
+    "wave no": 1,
     "wave set": False,
     "wave complete": False,
     1: {
@@ -40,7 +40,7 @@ wave_manager = {
 class EnemySpawner:
     def __init__(self):
         self.choice = ['morph1', 'morph2', 'mage']
-        self.probabilities = [0.5, 0.3, 0.2]
+        self.probabilities = [0, 0, 0]
         # self.probabilities = [1, 0, 0]
         self.max_spawn = 300
         self.spawn_count = 0
@@ -67,6 +67,10 @@ class EnemySpawner:
             wave_manager['wave no'] += 1
             wave_manager['wave set'] = True
 
+    def resetSpawner(self):
+        wave_manager['wave no'] = 1
+        wave_manager['wave set'] = False
+    
     def get_spawn_position(self, displayScroll):
         """Returns a random position outside the screen boundaries, adjusted for scrolling."""
         scroll_x, scroll_y = displayScroll  # Unpack scrolling offset

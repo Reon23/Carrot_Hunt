@@ -4,6 +4,10 @@ from audio import SFXplayer
 
 collectable_list = pygame.sprite.Group()
 
+def reset_carrots():
+    for item in collectable_list:
+        collectable_list.remove_internal(item)
+
 class Carrot(pygame.sprite.Sprite):
     def __init__(self, x, y, scale):
         self.x = x
