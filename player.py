@@ -1,7 +1,7 @@
 import pygame
 import math
 from animator import Animate
-from weapons import Ak47, GlockP80, Submachine
+from weapons import Ak47, GlockP80, Submachine, AR
 from hud import healthBar, ScoreBar
 
 class Player(pygame.sprite.Sprite):
@@ -26,6 +26,7 @@ class Player(pygame.sprite.Sprite):
 
         # self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
         self.player_weapon = GlockP80(self.x, self.y, 0.8, self.player_speed)
+        # self.player_weapon = AR(self.x, self.y, 0.65, self.player_speed)
         # self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)
     
     def hurt(self, damage):
@@ -37,7 +38,9 @@ class Player(pygame.sprite.Sprite):
         self.player_health.updateHealth(min(100, self.player_health.health + points))
 
     def upgradeWeapon(self):
-        if self.player_score.score >= 5000 and not isinstance(self.player_weapon, Ak47):
+        if self.player_score.score >= 10000 and not isinstance(self.player_weapon, AR):
+            self.player_weapon = AR(self.x, self.y, 0.65, self.player_speed)
+        if self.player_score.score >= 5000 and self.player_score.score < 10000 and not isinstance(self.player_weapon, Ak47):
             self.player_weapon = Ak47(self.x, self.y, 0.8, self.player_speed)
         elif self.player_score.score >= 600 and self.player_score.score < 5000 and not isinstance(self.player_weapon, Submachine):
             self.player_weapon = Submachine(self.x, self.y, 0.8, self.player_speed)

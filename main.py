@@ -3,7 +3,6 @@ from game import Engine
 from enemy import reset_enemy
 from weapons import reset_bullets
 from collectables import reset_carrots
-from display import DISPLAY_WIDTH, DISPLAY_HEIGHT, SCREEN
 from title import Title
 from death import Death
 

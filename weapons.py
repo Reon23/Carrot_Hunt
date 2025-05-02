@@ -315,3 +315,80 @@ class Submachine:
         
         self.renderBullets(screen, keys)
         self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)
+
+class AR:
+
+    def __init__(self, x, y, scale, player_speed):
+        self.x = x
+        self.y = y
+        self.width = 128
+        self.height = 48
+        self.scale = scale
+        self.mouse_x, self.mouse_y = 0, 0
+        
+        self.bullet_speed = 60
+        self.bullet_damage = 30
+        self.last_update = pygame.time.get_ticks()
+        self.fire_rate = 100
+        self.player_speed = player_speed
+
+        self.animations = {
+            "idle": Animate('./assets/weapons/ar/ar.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
+            "shoot": Animate('./assets/weapons/ar/ar.png', self.x, self.y, self.width, self.height, 12, 0, self.scale, 15)
+        }
+        self.weapon_state = "idle"
+        self.flipped = False
+
+        self.weapon_sfx = SFXplayer('./assets/audio/submachine.ogg')
+
+    def rotateWeapon(self, player_x, player_y):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        
+        rel_x, rel_y = self.mouse_x - player_x, self.mouse_y - player_y
+        angle = (180 / math.pi) * math.atan2(-rel_y, rel_x)
+        
+        self.flipped = rel_x < 0
+        if self.flipped:
+            angle = -angle + 180
+        
+        return angle
+    
+    def handleFire(self, pos_x, pos_y, angle):
+        current_time = pygame.time.get_ticks()
+        animation = self.animations[self.weapon_state]
+        animation_duration = animation.frames * animation.animation_cooldown
+
+        if current_time - self.last_update >= animation_duration: 
+            self.last_update = current_time
+            
+            angle = self.rotateWeapon(pos_x, pos_y)
+            muzzle_offset = 8  
+            muzzle_x = pos_x + math.cos(math.radians(angle)) * muzzle_offset
+            muzzle_y = pos_y - math.sin(math.radians(angle)) * muzzle_offset
+
+            self.weapon_sfx.stopSound()
+            self.weapon_sfx.playSound()
+            bullets.add_internal(Bullet(muzzle_x, muzzle_y, self.mouse_x, self.mouse_y, self.bullet_speed, angle, self.bullet_damage, 40, 5, "red"))
+
+    def renderBullets(self, screen, keys):
+        for bullet in bullets:
+            if keys[pygame.K_a]: bullet.x += self.player_speed * time['delta'] * 60
+            if keys[pygame.K_d]: bullet.x -= self.player_speed * time['delta'] * 60
+            if keys[pygame.K_w]: bullet.y += self.player_speed * time['delta'] * 60
+            if keys[pygame.K_s]: bullet.y -= self.player_speed * time['delta'] * 60
+            bullet.render(screen, self.flipped)
+    
+    def render(self, screen, pos_x, pos_y, keys):
+        angle = self.rotateWeapon(pos_x, pos_y)
+        offset_x, offset_y = (-12, 20) if self.flipped else (12, 20)
+
+        mouse_button = pygame.mouse.get_pressed()
+        
+        if mouse_button[0]:
+            self.weapon_state = "shoot"
+            self.handleFire(pos_x + offset_x, pos_y + offset_y - 10, angle)
+        else:
+            self.weapon_state = "idle"
+        
+        self.renderBullets(screen, keys)
+        self.animations[self.weapon_state].animate(screen, True, pos_x + offset_x, pos_y + offset_y, angle, self.flipped)

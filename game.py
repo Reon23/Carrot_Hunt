@@ -56,14 +56,6 @@ class Engine:
         self.fading = False
         pygame.mouse.set_visible(False)
 
-    def toggle_fullscreen(self):
-        """Toggles fullscreen mode when F11 is pressed."""
-        self.fullscreen = not self.fullscreen
-        if self.fullscreen:
-            pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-        else:
-            pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
     def render_fps(self):
         """Displays the FPS counter on the screen."""
         fps_text = font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255))
@@ -79,8 +71,9 @@ class Engine:
                     self.running = False
                     return -1
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_F11:
-                        self.toggle_fullscreen()
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+                        return "title"
 
             # Handle keyboard events
             movement = pygame.math.Vector2(0, 0)
