@@ -107,40 +107,55 @@ class EnemySpawner:
     def handle_outside(self, displayScroll):
         scroll_x, scroll_y = displayScroll
         current_time = pygame.time.get_ticks()
-        
-        for enemy in enemy_list:
-            # --- Horizontal check ---
-            if not getattr(enemy, 'hurt', False):
-                if enemy.x + enemy.width < scroll_x:
-                    if not hasattr(enemy, 'outside_horizontal_since') or enemy.outside_horizontal_since is None:
-                        enemy.outside_horizontal_since = current_time
-                    elif current_time - enemy.outside_horizontal_since >= self.outside_cooldown:
-                        enemy.x = random.randint(SCREEN_WIDTH + 50, SCREEN_WIDTH + 200) + scroll_x
-                        enemy.outside_horizontal_since = None
-                elif enemy.x > scroll_x + SCREEN_WIDTH:
-                    if not hasattr(enemy, 'outside_horizontal_since') or enemy.outside_horizontal_since is None:
-                        enemy.outside_horizontal_since = current_time
-                    elif current_time - enemy.outside_horizontal_since >= self.outside_cooldown:
-                        enemy.x = random.randint(-200, -50) + scroll_x
-                        enemy.outside_horizontal_since = None
-                else:
-                    enemy.outside_horizontal_since = None  # Reset if enemy is visible
+        sides = ['left', 'right', 'top', 'bottom']
 
-                # --- Vertical check ---
-                if enemy.y + enemy.height * 2 < scroll_y:
-                    if not hasattr(enemy, 'outside_vertical_since') or enemy.outside_vertical_since is None:
-                        enemy.outside_vertical_since = current_time
-                    elif current_time - enemy.outside_vertical_since >= self.outside_cooldown:
-                        enemy.y = random.randint(SCREEN_HEIGHT + 50, SCREEN_HEIGHT + 200) + scroll_y
-                        enemy.outside_vertical_since = None
-                elif enemy.y > scroll_y + SCREEN_HEIGHT:
-                    if not hasattr(enemy, 'outside_vertical_since') or enemy.outside_vertical_since is None:
-                        enemy.outside_vertical_since = current_time
-                    elif current_time - enemy.outside_vertical_since >= self.outside_cooldown:
+        for enemy in enemy_list:
+            if getattr(enemy, 'hurt', False):
+                continue
+
+            # Determine if enemy is outside and which side
+            current_side = None
+            if enemy.x + enemy.width < scroll_x:
+                current_side = 'left'
+            elif enemy.x > scroll_x + SCREEN_WIDTH:
+                current_side = 'right'
+            elif enemy.y + enemy.height * 2 < scroll_y:
+                current_side = 'top'
+            elif enemy.y > scroll_y + SCREEN_HEIGHT:
+                current_side = 'bottom'
+
+            if current_side:
+                # Initialize timer attribute name based on side
+                timer_attr = f'outside_{current_side}_since'
+                since = getattr(enemy, timer_attr, None)
+                if since is None:
+                    setattr(enemy, timer_attr, current_time)
+                elif current_time - since >= self.outside_cooldown:
+                    # Choose a new side excluding the current one
+                    new_side = random.choice([s for s in sides if s != current_side])
+                    # Reposition enemy to the new side
+                    if new_side == 'left':
+                        enemy.x = random.randint(-200, -50) + scroll_x
+                        enemy.y = random.randint(50, SCREEN_HEIGHT) + scroll_y
+                    elif new_side == 'right':
+                        enemy.x = random.randint(SCREEN_WIDTH + 50, SCREEN_WIDTH + 200) + scroll_x
+                        enemy.y = random.randint(50, SCREEN_HEIGHT) + scroll_y
+                    elif new_side == 'top':
+                        enemy.x = random.randint(50, SCREEN_WIDTH) + scroll_x
                         enemy.y = random.randint(-200, -50) + scroll_y
-                        enemy.outside_vertical_since = None
-                else:
-                    enemy.outside_vertical_since = None  # Reset if enemy is visible
+                    else:  # bottom
+                        enemy.x = random.randint(50, SCREEN_WIDTH) + scroll_x
+                        enemy.y = random.randint(SCREEN_HEIGHT + 50, SCREEN_HEIGHT + 200) + scroll_y
+                    # Reset all outside timers
+                    for side in sides:
+                        attr = f'outside_{side}_since'
+                        setattr(enemy, attr, None)
+            else:
+                # Reset timers if back on screen
+                for side in ['horizontal', 'vertical']:
+                    for pos in ['left', 'right'] if side == 'horizontal' else ['top', 'bottom']:
+                        attr = f'outside_{pos}_since'
+                        setattr(enemy, attr, None)
 
     def handle_spawn(self, displayScroll):
         current_time = pygame.time.get_ticks()
