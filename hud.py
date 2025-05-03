@@ -1,6 +1,7 @@
 import pygame
 from game import SCREEN_WIDTH, SCREEN_HEIGHT, font
 from spawner import wave_manager
+from death import details
 
 
 class healthBar:
@@ -29,6 +30,9 @@ class ScoreBar:
 
     def addScore(self, value):
         self.score += value
+    
+    def saveScore(self):
+        details['score'] = self.score
 
     def render(self, screen):
         score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
