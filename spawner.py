@@ -35,6 +35,11 @@ wave_manager = {
         "max enemies" : 200,
         "spawn rate" : 500
         },
+    6: {
+        "enemies" : [0, 0, 1],
+        "max enemies" : 150,
+        "spawn rate": 535
+        }
 }
 
 class EnemySpawner:
@@ -59,7 +64,7 @@ class EnemySpawner:
         enemy_list.add_internal(Dummy())
 
     def updateSpawner(self):
-        if wave_manager['wave no'] <= 5:
+        if wave_manager['wave no'] <= 6:
             self.probabilities = wave_manager[wave_manager['wave no']]['enemies']
             self.max_spawn = wave_manager[wave_manager['wave no']]['max enemies']
             self.spawn_cooldown = wave_manager[wave_manager['wave no']]['spawn rate']

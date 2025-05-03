@@ -2,6 +2,7 @@ import pygame
 from game import SCREEN_WIDTH, SCREEN_HEIGHT, font
 from spawner import wave_manager
 
+
 class healthBar:
 
     def __init__(self, health):
