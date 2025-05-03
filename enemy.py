@@ -517,6 +517,7 @@ class Mage(pygame.sprite.Sprite):
         self.spell_cast = False
         self.play_sfx = True
         self.sfx_cast = SFXplayer('./assets/audio/mage_cast.ogg')
+        self.sfx_blob = SFXplayer('./assets/audio/mage_blob.ogg')
 
         self.animations = {
             "idle": Animate('./assets/enemy/Mage/Mage.png', self.x, self.y, self.width, self.height, 7, 0, self.scale, 50),
@@ -614,6 +615,9 @@ class Mage(pygame.sprite.Sprite):
             self.mode = self.selected_attack
             self.attack = True
 
+        if self.selected_attack == "atk1" and self.play_sfx:
+            self.sfx_blob.playSound()
+            self.play_sfx = False
         if self.selected_attack == "atk2" and self.play_sfx:
             self.sfx_cast.playSound()
             self.play_sfx = False
