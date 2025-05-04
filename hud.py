@@ -2,6 +2,7 @@ import pygame
 from game import SCREEN_WIDTH, SCREEN_HEIGHT, font
 from spawner import wave_manager
 from death import details
+from audio import SFXplayer
 
 
 class healthBar:
@@ -14,9 +15,20 @@ class healthBar:
         self.color = "red"
         self.height = 20
         self.width = int(SCREEN_WIDTH * 0.35)
+        self.health_warn = SFXplayer('./assets/audio/warn.ogg')
+        self.warned = False
     
     def updateHealth(self, value):
         self.health = value  # Prevents health from going negative
+        self.healthWarn()
+    
+    def healthWarn(self):
+        if self.health <= 40:
+            if not self.warned:
+                self.health_warn.playSound()
+                self.warned = True
+        else:
+            self.warned = False
 
     def render(self, screen):
         current_width = max(0, (self.width * (self.health / self.max_health)))  # Smooth scaling

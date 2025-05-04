@@ -55,6 +55,7 @@ class Heart(pygame.sprite.Sprite):
         self.height = 32
         self.scale = 1.75
         self.points = points
+        self.pickup_sfx = SFXplayer('./assets/audio/heal.ogg', 0.6)
         self.sprite = Animate('./assets/collectables/heart/demonheart.png', 
                               self.x, self.y, self.width, self.height, 7, 0, self.scale, 100)
     
@@ -64,6 +65,7 @@ class Heart(pygame.sprite.Sprite):
         player_rect = pygame.Rect(player.x, player.y, player.width, player.height)
 
         if self.hitbox.colliderect(player_rect):
+            self.pickup_sfx.playSound()
             player.heal(self.points)
             self.kill()
     

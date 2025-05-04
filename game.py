@@ -31,6 +31,7 @@ from weapons import bullets
 from spawner import EnemySpawner, CollectableSpawner, wave_manager
 from collectables import collectable_list
 from effects import ScreenEffects
+from audio import MusicPlayer
 
 class Engine:
 
@@ -47,6 +48,8 @@ class Engine:
         self.enemy_spawner = EnemySpawner()
         self.collectable_spawner = CollectableSpawner()
         self.wave_bar = WaveBar()
+        self.music = MusicPlayer()
+        self.music_playing = False
         self.waiting = True
         self.wait_cooldown = 8000 + pygame.time.get_ticks()
         self.last_update = 0
@@ -176,6 +179,13 @@ class Engine:
             if not self.waiting:
                 self.wave_bar.render(screen)
 
+            if not self.waiting and not self.music_playing:
+                self.music.play()
+                self.music_playing = True
+
+            if self.music_playing:
+                self.music.update()
+
             if not self.screen_effect.fade_complete:
                 self.screen_effect.FadeOut(screen)
             
@@ -188,5 +198,6 @@ class Engine:
                 self.running = False
                 self.enemy_spawner.resetSpawner()
                 self.player.player_score.saveScore()
+                self.music.stop()
                 return 'death'
 

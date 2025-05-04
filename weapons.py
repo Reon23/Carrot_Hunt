@@ -124,6 +124,7 @@ class Bullet:
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
         self.hitbox = None
+        self.bullet_sfx = SFXplayer('./assets/audio/impact.ogg')
         
         # Create a bullet surface with transparency
         self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -134,6 +135,7 @@ class Bullet:
         self.bullet_lifetime = lifetime
 
     def kill(self):
+        self.bullet_sfx.playSound()
         bullets.remove_internal(self)
     
     def render(self, screen, flipped):
@@ -191,7 +193,7 @@ class GlockP80:
         self.weapon_state = "idle"
         self.flipped = False
 
-        self.weapon_sfx = SFXplayer('./assets/audio/gawk.ogg', 0.5)
+        self.weapon_sfx = SFXplayer('./assets/audio/gawk.ogg', 0.4)
 
     def rotateWeapon(self, player_x, player_y):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
@@ -249,10 +251,10 @@ class Submachine:
         self.scale = scale
         self.mouse_x, self.mouse_y = 0, 0
         
-        self.bullet_speed = 60  # Faster than AK-47
-        self.bullet_damage = 20   # Lower damage than AK-47
+        self.bullet_speed = 60
+        self.bullet_damage = 20
         self.last_update = pygame.time.get_ticks()
-        self.fire_rate = 100  # Faster fire rate (100ms cooldown)
+        self.fire_rate = 100
         self.player_speed = player_speed
 
         self.animations = {
@@ -262,7 +264,7 @@ class Submachine:
         self.weapon_state = "idle"
         self.flipped = False
 
-        self.weapon_sfx = SFXplayer('./assets/audio/submachine.ogg')
+        self.weapon_sfx = SFXplayer('./assets/audio/submachine.ogg', 1)
 
     def rotateWeapon(self, player_x, player_y):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
@@ -327,14 +329,14 @@ class AR:
         self.mouse_x, self.mouse_y = 0, 0
         
         self.bullet_speed = 60
-        self.bullet_damage = 30
+        self.bullet_damage = 25
         self.last_update = pygame.time.get_ticks()
         self.fire_rate = 100
         self.player_speed = player_speed
 
         self.animations = {
             "idle": Animate('./assets/weapons/ar/ar.png', self.x, self.y, self.width, self.height, 1, 0, self.scale, 50),
-            "shoot": Animate('./assets/weapons/ar/ar.png', self.x, self.y, self.width, self.height, 12, 0, self.scale, 15)
+            "shoot": Animate('./assets/weapons/ar/ar.png', self.x, self.y, self.width, self.height, 12, 0, self.scale, 10)
         }
         self.weapon_state = "idle"
         self.flipped = False

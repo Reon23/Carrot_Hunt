@@ -69,7 +69,7 @@ class Morph1(pygame.sprite.Sprite):
         self.last_hit_time = 0
         self.hit_cooldown = 2000
         self.play_sfx = True
-        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg')
+        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg', 1)
         self.sfx_atk2 = SFXplayer('./assets/audio/morph_atk2.mp3')
 
         self.animations = {
@@ -281,12 +281,12 @@ class Morph2(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.scale = scale
-        self.speed = 5  # Slightly slower than Morph1
+        self.speed = 5 
 
         self.render_x = x
         self.render_y = y
         
-        self.health = 70  # More health than Morph1
+        self.health = 70
         self.drop_health = 0.2
         self.drop_points = self.health//2
         self.points = 70
@@ -302,7 +302,7 @@ class Morph2(pygame.sprite.Sprite):
         self.last_hit_time = 0
         self.hit_cooldown = 2500
         self.play_sfx = True
-        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg')
+        self.sfx_atk1 = SFXplayer('./assets/audio/morph_atk1.ogg', 1)
         self.sfx_atk2 = SFXplayer('./assets/audio/morph_atk2.mp3')
 
         self.animations = {
@@ -516,7 +516,7 @@ class Mage(pygame.sprite.Sprite):
         self.death_period = 0
         self.spell_cast = False
         self.play_sfx = True
-        self.sfx_cast = SFXplayer('./assets/audio/mage_cast.ogg')
+        self.sfx_cast = SFXplayer('./assets/audio/mage_cast.ogg', 0.6)
         self.sfx_blob = SFXplayer('./assets/audio/mage_blob.ogg')
 
         self.animations = {
@@ -695,6 +695,7 @@ class MageBlob(pygame.sprite.Sprite):
         self.speed = 10
         self.animation = {'follow' : Animate('./assets/enemy/Mage/MageBlob.png', self.x, self.y, self.width, self.height, 10, 0, 1, 50)}
         self.blob_rect = pygame.Rect(self.render_x + self.width//4, self.render_y + self.height//4, self.width//2, self.height//2)
+        self.blob_destroy_sfx = SFXplayer('./assets/audio/blob_destroy.ogg')
         self.blobBehavior = 'follow'
         self.blobLife = 6000
         self.blobkilled = False
@@ -780,6 +781,7 @@ class MageBlob(pygame.sprite.Sprite):
         self.health -= damage
         if self.health <= 0:
             player.player_score.addScore(self.points)
+            self.blob_destroy_sfx.playSound()
             self.kill()
     
     def kill(self):
