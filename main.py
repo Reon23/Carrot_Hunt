@@ -5,6 +5,7 @@ from weapons import reset_bullets
 from collectables import reset_carrots
 from title import Title
 from death import Death
+from end import End
 
 
 if __name__ == '__main__':
@@ -25,4 +26,7 @@ if __name__ == '__main__':
             pygame.mouse.set_visible(True)
             death = Death()
             state = death.show()
+        elif state == 'end':
+            end = End()
+            state = end.show()
     pygame.quit()

@@ -44,6 +44,7 @@ wave_manager = {
 
 class EnemySpawner:
     def __init__(self):
+        self.waves_complete = False
         self.choice = ['morph1', 'morph2', 'mage']
         self.probabilities = [0, 0, 0]
         # self.probabilities = [1, 0, 0]
@@ -71,6 +72,8 @@ class EnemySpawner:
             self.spawn_count = 0
             wave_manager['wave no'] += 1
             wave_manager['wave set'] = True
+        else:
+            self.waves_complete = True
 
     def resetSpawner(self):
         wave_manager['wave no'] = 1

@@ -189,6 +189,9 @@ class Engine:
             if not self.screen_effect.fade_complete:
                 self.screen_effect.FadeOut(screen)
             
+            if self.enemy_spawner.waves_complete:
+                self.music.stop()
+                self.screen_effect.FadeIn(screen, 1)
             pygame.display.flip()
             
             # Calculate Delta Time & Set Frame Rate
@@ -200,4 +203,9 @@ class Engine:
                 self.player.player_score.saveScore()
                 self.music.stop()
                 return 'death'
+
+
+            if self.screen_effect.fade_in_complete:
+                self.enemy_spawner.resetSpawner()
+                return 'end'
 
