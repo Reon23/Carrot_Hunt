@@ -14,7 +14,7 @@
 
 * 🐰 **Play as:** A determined bunny exploring a treacherous cave.
 * 🥕 **Objective:** Find as many carrots as you can find.
-* 🎯 **Goal:** Reach the final wave to win the game!
+* 🎯 **Goal:** Beat the final wave to win the game!
 
 ---
 
@@ -31,10 +31,6 @@
 
 ### 🛠️ Requirements
 * Computer💻
-
-### 📷 Screenshots
-
----
 
 ### 👨‍💻 Developed By Reon Dsouza & Ruben Saldanha
 
