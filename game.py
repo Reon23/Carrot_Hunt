@@ -75,6 +75,7 @@ class Engine:
                     return -1
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        self.music.stop()
                         self.running = False
                         return "title"
 

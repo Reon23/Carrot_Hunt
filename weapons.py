@@ -341,7 +341,7 @@ class AR:
         self.weapon_state = "idle"
         self.flipped = False
 
-        self.weapon_sfx = SFXplayer('./assets/audio/submachine.ogg')
+        self.weapon_sfx = SFXplayer('./assets/audio/ar.ogg')
 
     def rotateWeapon(self, player_x, player_y):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()

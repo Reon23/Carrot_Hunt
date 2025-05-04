@@ -19,7 +19,7 @@ class MusicPlayer:
         """
         # Define the internal track list here (file path, volume)
         tracks = [
-            ("./assets/audio/track1.ogg", 0.25),
+            ("./assets/audio/track1.ogg", 0.20),
             ("./assets/audio/track2.ogg", 0.25),
         ]
 
